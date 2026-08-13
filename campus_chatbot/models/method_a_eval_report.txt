@@ -1,0 +1,23 @@
+Method A - TF-IDF + SVM
+Accuracy: 0.571
+
+                     precision    recall  f1-score   support
+
+course_registration       0.67      0.67      0.67         3
+     exam_timetable       1.00      0.50      0.67         2
+        fee_payment       1.00      0.33      0.50         3
+ hostel_application       0.50      0.50      0.50         2
+         it_support       0.33      1.00      0.50         2
+    library_service       1.00      0.50      0.67         2
+
+           accuracy                           0.57        14
+          macro avg       0.75      0.58      0.58        14
+       weighted avg       0.76      0.57      0.58        14
+
+Confusion Matrix (rows=true, cols=pred):
+[[2 0 0 0 1 0]
+ [0 1 0 0 1 0]
+ [0 0 1 1 1 0]
+ [0 0 0 1 1 0]
+ [0 0 0 0 2 0]
+ [1 0 0 0 0 1]]

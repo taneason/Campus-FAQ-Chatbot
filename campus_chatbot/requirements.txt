@@ -1,0 +1,9 @@
+streamlit
+scikit-learn
+pandas
+joblib
+requests
+
+# Uncomment when Method B (BERT) is added:
+# transformers
+# torch

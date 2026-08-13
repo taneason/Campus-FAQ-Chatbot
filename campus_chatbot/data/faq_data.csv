@@ -1,0 +1,69 @@
+text,intent
+how do I check my exam timetable,exam_timetable
+where can I find the exam schedule,exam_timetable
+when is my final exam,exam_timetable
+macam mana nak check exam timetable,exam_timetable
+bila exam saya,exam_timetable
+exam timetable kat mana boleh check,exam_timetable
+怎么查考试时间表,exam_timetable
+我的考试时间在哪里看,exam_timetable
+exam schedule where got ah,exam_timetable
+how to see my exam date lah,exam_timetable
+nak tau exam date bila,exam_timetable
+please tell me exam timetable link,exam_timetable
+how do I register for courses,course_registration
+where can I add or drop subjects,course_registration
+how to enroll in a new course,course_registration
+macam mana nak daftar subject,course_registration
+nak add subject camne,course_registration
+course registration kat mana buat,course_registration
+怎么注册课程,course_registration
+如何选课,course_registration
+how to add subject ah,course_registration
+subject registration link please,course_registration
+bila boleh drop subject,course_registration
+can I still change course this week,course_registration
+how do I pay my tuition fee,fee_payment
+where to pay semester fee,fee_payment
+macam mana nak bayar yuran,fee_payment
+nak settle fee macam mana,fee_payment
+fee payment kat mana buat,fee_payment
+怎么交学费,fee_payment
+学费在哪里缴,fee_payment
+payment portal link please,fee_payment
+how to check outstanding fee,fee_payment
+fee still ada baki ke,fee_payment
+can I pay fee by installment,fee_payment
+how to apply for online banking payment,fee_payment
+how do I apply for hostel,hostel_application
+where to submit hostel application,hostel_application
+macam mana nak apply asrama,hostel_application
+nak stay hostel camne apply,hostel_application
+hostel application form kat mana,hostel_application
+怎么申请宿舍,hostel_application
+宿舍申请表在哪里,hostel_application
+hostel apply link please,hostel_application
+when is hostel application deadline,hostel_application
+bila deadline apply asrama,hostel_application
+is hostel still available this semester,hostel_application
+how do I access the library online,library_service
+where can I borrow books,library_service
+macam mana nak pinjam buku,library_service
+nak return buku kat mana,library_service
+library opening hours ah,library_service
+图书馆几点开门,library_service
+怎么借书,library_service
+online database access macam mana,library_service
+how to renew borrowed book,library_service
+library wifi camne connect,library_service
+how do I connect to campus wifi,it_support
+wifi tak boleh connect macam mana,it_support
+macam mana nak connect wifi kampus,it_support
+怎么连接校园wifi,it_support
+校园网络登不上怎么办,it_support
+student email password reset camne,it_support
+how to reset my student portal password,it_support
+portal login problem ah,it_support
+cannot login student portal help,it_support
+IT support contact kat mana,it_support
+who can I contact for IT problem,it_support
