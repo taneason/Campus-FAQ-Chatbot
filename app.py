@@ -10,6 +10,7 @@ Run with:
     streamlit run app.py
 """
 
+import os
 from pathlib import Path
 
 import joblib
@@ -105,7 +106,10 @@ def predict_method_b(text: str):
 # ---------------------------------------------------------------------------
 # METHOD C - Rasa
 # ---------------------------------------------------------------------------
-RASA_URL = "http://localhost:5005/model/parse"
+RASA_URL = st.secrets.get(
+    "RASA_URL",
+    os.getenv("RASA_URL", "http://localhost:5005/model/parse"),
+)
 
 
 def predict_method_c(text: str):
@@ -146,6 +150,14 @@ EXAMPLE_QUESTIONS = [
 
 
 def render_answer_box(method_name: str, intent: str, confidence: float):
+    if intent == "not_implemented":
+        if method_name.startswith("Method B"):
+            st.warning("Method B model is unavailable. Run `python train_method_b.py` first.")
+        else:
+            st.warning("Method C needs a trained Rasa server. Configure RASA_URL for deployed apps.")
+        st.caption("Predicted intent: unavailable | Confidence: 0.00")
+        return
+
     reply = get_reply(intent, confidence)
     st.markdown(f"### {method_name}")
     st.info(reply)

@@ -17,8 +17,9 @@ import torch
 from sklearn.metrics import accuracy_score, classification_report
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import LabelEncoder
+from torch.optim import AdamW
 from torch.utils.data import DataLoader, Dataset
-from transformers import AdamW, AutoModelForSequenceClassification, AutoTokenizer
+from transformers import AutoModelForSequenceClassification, AutoTokenizer
 
 SEED = 42
 MODEL_NAME = "bert-base-multilingual-cased"

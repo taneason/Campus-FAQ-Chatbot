@@ -1,0 +1,18 @@
+Method B: multilingual-BERT Evaluation
+Base model: bert-base-multilingual-cased
+Validation accuracy: 0.8824
+
+Classification report:
+                     precision    recall  f1-score   support
+
+course_registration       0.83      0.83      0.83         6
+     exam_timetable       1.00      1.00      1.00         6
+        fee_payment       1.00      1.00      1.00         6
+ hostel_application       1.00      0.80      0.89         5
+         it_support       0.67      1.00      0.80         6
+    library_service       1.00      0.60      0.75         5
+
+           accuracy                           0.88        34
+          macro avg       0.92      0.87      0.88        34
+       weighted avg       0.91      0.88      0.88        34
+

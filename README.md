@@ -93,6 +93,22 @@ rasa run --enable-api --cors "*" --port 5005
 
 `app.py` calls `http://localhost:5005/model/parse` by default, so keep that Rasa server running during a local Method C demo. For Streamlit Cloud, deploy Rasa as a separate public service and set its parse endpoint through `RASA_URL`, for example `https://your-rasa-service.example.com/model/parse`.
 
+### Deploy Method C on Render
+
+This repository includes `render.yaml` and `rasa_project/Dockerfile`. After pushing the repository to GitHub:
+
+1. Sign in to [Render](https://render.com/) with GitHub and select **New +** > **Blueprint**.
+2. Select this GitHub repository and approve the `campus-faq-rasa` service shown by the blueprint.
+3. Wait for the first build to finish. Render trains the Rasa model during the Docker build and starts the Rasa REST API.
+4. Copy the deployed service URL and append `/model/parse`, for example `https://campus-faq-rasa.onrender.com/model/parse`.
+5. In Streamlit Community Cloud, open your app's **Settings** > **Secrets** and add:
+
+```toml
+RASA_URL = "https://campus-faq-rasa.onrender.com/model/parse"
+```
+
+Render's free service can sleep after inactivity, so the first Method C request after a pause may take longer.
+
 ## Demo features
 
 - Ask a question in single-method mode
