@@ -1,14 +1,19 @@
 """
 Unified Campus FAQ Chatbot Demo
 --------------------------------
-This app combines the working TF-IDF + SVM method with a polished demo UI
-for a campus FAQ assistant. It is designed to be assignment-ready and easy
-for teammates to extend with new methods.
+Combines all three teammates' solutions into one Streamlit interface:
+    Method A - TF-IDF + SVM              (traditional ML)      -> implemented below
+    Method B - multilingual-BERT         (deep learning)       -> implemented below
+    Method C - Rasa                      (platform-based)      -> implemented below
+
+Run with:
+    streamlit run app.py
 """
 
 from pathlib import Path
 
 import joblib
+import requests
 import streamlit as st
 
 from data.responses import CONFIDENCE_THRESHOLD, RESPONSES
@@ -19,7 +24,7 @@ MODEL_DIR = Path(__file__).resolve().parent / "models"
 
 
 # ---------------------------------------------------------------------------
-# METHOD A - working TF-IDF + SVM
+# METHOD A - TF-IDF + SVM  (already working)
 # ---------------------------------------------------------------------------
 @st.cache_resource
 def load_method_a():
@@ -30,8 +35,7 @@ def load_method_a():
     missing = [str(path.name) for path in [vectorizer_path, clf_path, label_path] if not path.exists()]
     if missing:
         raise FileNotFoundError(
-            "Missing model artifacts: " + ", ".join(missing)
-            + ". Run python train_method_a.py first."
+            "Missing model artifacts: " + ", ".join(missing) + ". Run python train_method_a.py first."
         )
 
     vectorizer = joblib.load(vectorizer_path)
@@ -44,11 +48,9 @@ def predict_method_a(text: str):
     if not isinstance(text, str):
         text = str(text)
 
-    cleaner = normalize_text(text)
+    cleaner = " ".join(text.strip().lower().split())
     if not cleaner:
         return "fallback", 0.0
-
-    guessed_intent, guess_score = keyword_intent_guess(cleaner)
 
     vectorizer, clf, label_encoder = load_method_a()
     X = vectorizer.transform([cleaner])
@@ -56,148 +58,75 @@ def predict_method_a(text: str):
     best_idx = probs.argmax()
     intent = label_encoder.inverse_transform([best_idx])[0]
     confidence = float(probs[best_idx])
-
-    if guess_score > 0 and (confidence < 0.5 or intent == "fallback"):
-        return guessed_intent, max(confidence, 0.45)
-
-    if guess_score >= 4 and intent != guessed_intent:
-        return guessed_intent, min(max(confidence, 0.55), 0.88)
-
     return intent, confidence
 
 
 # ---------------------------------------------------------------------------
-# METHOD B - placeholder for teammate B
+# METHOD B - multilingual-BERT
 # ---------------------------------------------------------------------------
+try:
+    from transformers import AutoModelForSequenceClassification, AutoTokenizer
+    import torch
+except ImportError:  # pragma: no cover
+    AutoModelForSequenceClassification = None
+    AutoTokenizer = None
+    torch = None
+
+
+@st.cache_resource
+def load_method_b():
+    if AutoTokenizer is None or AutoModelForSequenceClassification is None or torch is None:
+        raise ImportError("Install transformers and torch to use Method B.")
+
+    model_dir = MODEL_DIR / "method_b_bert"
+    tokenizer = AutoTokenizer.from_pretrained(str(model_dir))
+    model = AutoModelForSequenceClassification.from_pretrained(str(model_dir))
+    return tokenizer, model
+
+
 def predict_method_b(text: str):
-    return "not_implemented", 0.0
+    if AutoTokenizer is None or AutoModelForSequenceClassification is None or torch is None:
+        return "not_implemented", 0.0
+
+    try:
+        tokenizer, model = load_method_b()
+        inputs = tokenizer(text, return_tensors="pt", truncation=True)
+        with torch.no_grad():
+            logits = model(**inputs).logits
+        probs = torch.softmax(logits, dim=1)[0]
+        best_idx = int(probs.argmax())
+        confidence = float(probs[best_idx])
+        intent = model.config.id2label[best_idx]
+        return intent, confidence
+    except Exception:
+        return "not_implemented", 0.0
 
 
 # ---------------------------------------------------------------------------
-# METHOD C - placeholder for teammate C
+# METHOD C - Rasa
 # ---------------------------------------------------------------------------
+RASA_URL = "http://localhost:5005/model/parse"
+
+
 def predict_method_c(text: str):
-    return "not_implemented", 0.0
+    try:
+        resp = requests.post(RASA_URL, json={"text": text}, timeout=5)
+        resp.raise_for_status()
+        data = resp.json()
+        intent = data["intent"]["name"]
+        confidence = float(data["intent"]["confidence"])
+        return intent, confidence
+    except (requests.RequestException, KeyError, TypeError, ValueError):
+        return "not_implemented", 0.0
 
 
 # ---------------------------------------------------------------------------
-# Shared helpers
+# Shared helper: turn (intent, confidence) into a chat reply
 # ---------------------------------------------------------------------------
 def get_reply(intent: str, confidence: float) -> str:
     if confidence < CONFIDENCE_THRESHOLD or intent not in RESPONSES:
         return RESPONSES["fallback"]
     return RESPONSES[intent]
-
-
-KEYWORD_PATTERNS = {
-    "exam_timetable": [
-        "exam timetable", "exam schedule", "exam date", "final exam", "final timetable",
-        "exam time", "timetable", "schedule", "paper schedule", "exam slot", "exam dates",
-        "exam venue", "test schedule", "finals", "exam info", "date for exam"
-    ],
-    "course_registration": [
-        "register course", "register subject", "add subject", "drop subject", "course registration",
-        "subject registration", "enrol", "enroll", "course add drop", "add-drop",
-        "choose subject", "register class", "select course", "subject selection", "register classes",
-        "course add", "add course", "drop course", "elective", "change class section", "register subjek"
-    ],
-    "fee_payment": [
-        "pay fee", "tuition fee", "semester fee", "yuran", "payment", "pay school fee",
-        "fee payment", "outstanding fee", "installment", "tuition payment", "pay fees",
-        "pay semester charges", "fee balance", "remaining balance", "settle fee", "bank transfer"
-    ],
-    "hostel_application": [
-        "hostel", "asrama", "dorm", "residential", "room application", "stay hostel",
-        "apply hostel", "hostel application", "accommodation", "room booking", "hostel form",
-        "hostel room", "residential application", "stay in hostel"
-    ],
-    "library_service": [
-        "library", "borrow book", "return book", "renew book", "library hours", "library open",
-        "borrow books", "library portal", "database", "book loan", "library service",
-        "book due date", "borrow textbook", "renew book", "return borrowed books", "e-book"
-    ],
-    "it_support": [
-        "wifi", "campus wifi", "internet", "network", "portal login", "password reset",
-        "student portal", "login problem", "cannot login", "email password", "it support",
-        "computer problem", "reset password", "wifi cannot connect", "portal problem", "sign in",
-        "forgot password", "connection issue", "session expired"
-    ],
-}
-
-SLANG_REPLACEMENTS = {
-    "cant": "cannot",
-    "cannot": "cannot",
-    "camne": "how",
-    "cane": "how",
-    "nak": "want",
-    "tau": "know",
-    "tak": "not",
-    "tk": "not",
-    "dah": "already",
-    "kat": "at",
-    "mana": "where",
-    "bila": "when",
-    "macam": "like",
-    "mcm": "like",
-    "subjek": "subject",
-    "asrama": "hostel",
-    "yuran": "fee",
-    "portal": "portal",
-    "wifi": "wifi",
-    "login": "login",
-    "password": "password",
-    "reset": "reset",
-    "book": "book",
-    "library": "library",
-    "exam": "exam",
-    "timetable": "timetable",
-    "gila": "very",
-    "lah": "",
-    "ah": "",
-    "leh": "",
-    "ha": "",
-    "eh": "",
-    "ma": "",
-}
-
-
-def normalize_text(text: str) -> str:
-    if not isinstance(text, str):
-        text = str(text)
-
-    cleaned = text.lower().strip()
-    cleaned = cleaned.replace("?", " ").replace("!", " ").replace(".", " ")
-    cleaned = " ".join(cleaned.split())
-
-    for slang, replacement in SLANG_REPLACEMENTS.items():
-        cleaned = cleaned.replace(slang, replacement)
-
-    cleaned = " ".join(cleaned.split())
-    return cleaned
-
-
-def keyword_intent_guess(text: str):
-    if not isinstance(text, str):
-        text = str(text)
-
-    cleaned = normalize_text(text)
-    if not cleaned:
-        return "fallback", 0
-
-    scores = []
-    for intent, keywords in KEYWORD_PATTERNS.items():
-        score = 0
-        for kw in keywords:
-            if kw in cleaned:
-                score += 2
-        if intent in ["exam_timetable", "course_registration", "fee_payment", "hostel_application", "library_service", "it_support"]:
-            phrase_hits = sum(1 for intent_key in [intent] if intent_key in cleaned)
-            if phrase_hits:
-                score += 1
-        scores.append((intent, score))
-
-    best_intent, best_score = max(scores, key=lambda item: item[1])
-    return best_intent, best_score
 
 
 METHODS = {
@@ -297,6 +226,6 @@ else:
 
 st.sidebar.markdown("---")
 st.sidebar.caption(
-    "Method A is fully implemented and trained from the shared FAQ dataset. "
-    "Methods B and C are kept as placeholders to be filled in by teammates."
+    "Method A is fully implemented and trained. Method B requires a local BERT model in models/method_b_bert; "
+    "Method C expects a local Rasa server at http://localhost:5005."
 )

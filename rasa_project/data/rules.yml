@@ -1,0 +1,37 @@
+version: "3.1"
+
+rules:
+  - rule: Reply exam timetable
+    steps:
+      - intent: exam_timetable
+      - action: utter_exam_timetable
+
+  - rule: Reply course registration
+    steps:
+      - intent: course_registration
+      - action: utter_course_registration
+
+  - rule: Reply fee payment
+    steps:
+      - intent: fee_payment
+      - action: utter_fee_payment
+
+  - rule: Reply hostel application
+    steps:
+      - intent: hostel_application
+      - action: utter_hostel_application
+
+  - rule: Reply library service
+    steps:
+      - intent: library_service
+      - action: utter_library_service
+
+  - rule: Reply IT support
+    steps:
+      - intent: it_support
+      - action: utter_it_support
+
+  - rule: Reply fallback
+    steps:
+      - intent: out_of_scope
+      - action: utter_out_of_scope

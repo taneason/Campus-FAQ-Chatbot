@@ -1,0 +1,76 @@
+version: "3.1"
+
+nlu:
+  - intent: exam_timetable
+    examples: |
+      - how do I check my exam timetable
+      - where can I find the exam schedule
+      - when is my final exam
+      - exam timetable kat mana boleh check
+      - 我的考试时间在哪里看
+      - 怎么查考试时间表
+      - exam schedule where got ah
+      - how to see my exam date
+
+  - intent: course_registration
+    examples: |
+      - how do I register for courses
+      - where can I add or drop subjects
+      - how to enroll in a new course
+      - macam mana nak daftar subject
+      - 怎么注册课程
+      - 如何选课
+      - subject registration link please
+      - can I still change course this week
+
+  - intent: fee_payment
+    examples: |
+      - how do I pay my tuition fee
+      - where to pay semester fee
+      - macam mana nak bayar yuran
+      - nak settle fee macam mana
+      - 学费在哪里缴
+      - 怎么交学费
+      - payment portal link please
+      - can I pay fee by installment
+
+  - intent: hostel_application
+    examples: |
+      - how do I apply for hostel
+      - where to submit hostel application
+      - macam mana nak apply asrama
+      - hostel application form kat mana
+      - 怎么申请宿舍
+      - 宿舍申请表在哪里
+      - hostel apply link please
+      - is hostel still available this semester
+
+  - intent: library_service
+    examples: |
+      - how do I access the library online
+      - where can I borrow books
+      - macam mana nak pinjam buku
+      - library opening hours ah
+      - 图书馆几点开门
+      - 怎么借书
+      - how to renew borrowed book
+      - where can I find e-books
+
+  - intent: it_support
+    examples: |
+      - how do I connect to campus wifi
+      - wifi tak boleh connect macam mana
+      - 怎么连接校园wifi
+      - 校园网络登不上怎么办
+      - student email password reset camne
+      - portal login problem ah
+      - cannot login student portal help
+      - who can I contact for IT problem
+
+  - intent: out_of_scope
+    examples: |
+      - tell me a joke
+      - what is the weather today
+      - who won the world cup
+      - play me a song
+      - what is your favorite movie

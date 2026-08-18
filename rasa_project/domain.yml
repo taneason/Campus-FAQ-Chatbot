@@ -1,0 +1,30 @@
+version: "3.1"
+
+intents:
+  - exam_timetable
+  - course_registration
+  - fee_payment
+  - hostel_application
+  - library_service
+  - it_support
+  - out_of_scope
+
+responses:
+  utter_exam_timetable:
+    - text: "You can check your exam timetable from the student portal under Examination > Timetable."
+  utter_course_registration:
+    - text: "Use the student portal Course Registration page to add/drop subjects during the active registration window."
+  utter_fee_payment:
+    - text: "Tuition and semester fees can be paid through the Finance/Payment section in the portal."
+  utter_hostel_application:
+    - text: "Hostel applications are submitted through the Accommodation module in the student portal."
+  utter_library_service:
+    - text: "Library services are available at the library portal for borrowing, renewal, and online resources."
+  utter_it_support:
+    - text: "For IT issues, contact campus IT support or use the portal helpdesk ticket form."
+  utter_out_of_scope:
+    - text: "Sorry, I am not sure about that yet. Please contact the admin office for help."
+
+session_config:
+  session_expiration_time: 60
+  carry_over_slots_to_new_session: true

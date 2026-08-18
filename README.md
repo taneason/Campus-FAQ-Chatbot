@@ -7,14 +7,16 @@ looks like a complete prototype while still being easy to extend.
 | Method | Approach | Owner | Status |
 |---|---|---|---|
 | A | TF-IDF + SVM (traditional ML) | You | ✅ implemented |
-| B | Multilingual BERT (deep learning) | Teammate B | 🔲 placeholder |
-| C | Rasa (platform-based) | Teammate C | 🔲 placeholder |
+| B | Multilingual BERT (deep learning) | Teammate B | ✅ implemented (train script included) |
+| C | Rasa (platform-based) | Teammate C | ✅ implemented (Rasa project scaffold included) |
 
 ## What is already working
 
 - Shared question dataset in `data/faq_data.csv`
 - Canned responses in `data/responses.py`
 - TF-IDF + SVM intent classifier in `train_method_a.py`
+- Multilingual BERT training pipeline in `train_method_b.py`
+- Rasa training scaffold in `rasa_project/`
 - Streamlit app UI with single-method and compare-all modes
 - Quick question buttons and chat history for a smoother demo
 - Graceful fallback when model files are missing
@@ -25,11 +27,22 @@ looks like a complete prototype while still being easy to extend.
 Campus-FAQ-Chatbot/
 ├── app.py
 ├── train_method_a.py
+├── train_method_b.py
 ├── requirements.txt
 ├── README.md
 ├── data/
 │   ├── faq_data.csv
 │   └── responses.py
+├── rasa_project/
+│   ├── config.yml
+│   ├── domain.yml
+│   ├── credentials.yml
+│   ├── endpoints.yml
+│   ├── actions/
+│   │   └── __init__.py
+│   └── data/
+│       ├── nlu.yml
+│       └── rules.yml
 ├── models/
 │   ├── method_a_vectorizer.pkl
 │   ├── method_a_svm.pkl
@@ -43,8 +56,32 @@ Campus-FAQ-Chatbot/
 ```bash
 pip install -r requirements.txt
 python train_method_a.py
+python train_method_b.py
 streamlit run app.py
 ```
+
+## Method B (multilingual BERT)
+
+Train and save the Method B model:
+
+```bash
+python train_method_b.py --epochs 3 --batch-size 8
+```
+
+After training, the model artifacts are saved to `models/method_b_bert/` and are loaded automatically by `app.py`.
+
+## Method C (Rasa)
+
+Install Rasa separately (optional dependency), then train and run server:
+
+```bash
+pip install rasa
+cd rasa_project
+rasa train
+rasa run --enable-api --cors "*" --port 5005
+```
+
+`app.py` calls `http://localhost:5005/model/parse`, so keep that Rasa server running during Method C demo.
 
 ## Demo features
 
@@ -58,7 +95,8 @@ streamlit run app.py
 
 1. Add more examples to `data/faq_data.csv` for better coverage.
 2. Retrain Method A using `python train_method_a.py`.
-3. Replace the placeholder functions in `app.py` for Method B and Method C.
+3. Improve `train_method_b.py` hyperparameters or dataset size for better Method B accuracy.
+4. Expand `rasa_project/data/nlu.yml` and retrain Rasa for stronger Method C intent quality.
 4. Keep the same intent names across the team so comparison is fair.
 
 ## Common intents

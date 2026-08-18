@@ -3,7 +3,8 @@ scikit-learn
 pandas
 joblib
 requests
+transformers
+torch
 
-# Uncomment when Method B (BERT) is added:
-# transformers
-# torch
+# Optional for Method C (Rasa). Keep separate if you want lighter installs:
+# rasa
