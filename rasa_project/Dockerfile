@@ -2,7 +2,7 @@ FROM rasa/rasa:3.6.21-full
 
 WORKDIR /app
 
-COPY . /app
+COPY --chown=1001:0 . /app
 
 RUN rasa train --fixed-model-name campus-faq
 
