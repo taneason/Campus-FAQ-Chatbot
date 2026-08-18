@@ -113,15 +113,20 @@ RASA_URL = st.secrets.get(
 
 
 def predict_method_c(text: str):
-    try:
-        resp = requests.post(RASA_URL, json={"text": text}, timeout=5)
-        resp.raise_for_status()
-        data = resp.json()
-        intent = data["intent"]["name"]
-        confidence = float(data["intent"]["confidence"])
-        return intent, confidence
-    except (requests.RequestException, KeyError, TypeError, ValueError):
-        return "not_implemented", 0.0
+    # Render free tier sleeps when idle; give the first request time to wake it up.
+    for timeout in (8, 45):
+        try:
+            resp = requests.post(RASA_URL, json={"text": text}, timeout=timeout)
+            resp.raise_for_status()
+            data = resp.json()
+            intent = data["intent"]["name"]
+            confidence = float(data["intent"]["confidence"])
+            return intent, confidence
+        except requests.Timeout:
+            continue
+        except (requests.RequestException, KeyError, TypeError, ValueError):
+            return "not_implemented", 0.0
+    return "waking_up", 0.0
 
 
 # ---------------------------------------------------------------------------
@@ -150,6 +155,11 @@ EXAMPLE_QUESTIONS = [
 
 
 def render_answer_box(method_name: str, intent: str, confidence: float):
+    if intent == "waking_up":
+        st.info("Method C server was asleep and is waking up. Please submit your question again in a moment.")
+        st.caption("Predicted intent: waking up | Confidence: 0.00")
+        return
+
     if intent == "not_implemented":
         if method_name.startswith("Method B"):
             st.warning("Method B model is unavailable. Run `python train_method_b.py` first.")
@@ -199,16 +209,22 @@ if mode == "Single method":
         st.session_state.quick_question = ""
         predict_fn = METHODS[selected_method]
         intent, confidence = predict_fn(prompt)
-        reply = get_reply(intent, confidence)
 
-        st.session_state.chat_history.append({"role": "user", "text": prompt})
-        st.session_state.chat_history.append({"role": "assistant", "text": reply})
+        if intent == "waking_up":
+            st.info("Method C server was asleep and is waking up. Please submit your question again in a moment.")
+        elif intent == "not_implemented":
+            st.warning("This method is unavailable right now. Check its setup (trained model or running server).")
+        else:
+            reply = get_reply(intent, confidence)
 
-        st.subheader("Latest response")
-        st.markdown(f"**{selected_method.split(' - ')[0]}:** {reply}")
-        with st.expander("Prediction details"):
-            st.write(f"Intent: `{intent}`")
-            st.write(f"Confidence: `{confidence:.2f}`")
+            st.session_state.chat_history.append({"role": "user", "text": prompt})
+            st.session_state.chat_history.append({"role": "assistant", "text": reply})
+
+            st.subheader("Latest response")
+            st.markdown(f"**{selected_method.split(' - ')[0]}:** {reply}")
+            with st.expander("Prediction details"):
+                st.write(f"Intent: `{intent}`")
+                st.write(f"Confidence: `{confidence:.2f}`")
 
     if st.session_state.chat_history:
         st.subheader("Conversation history")
