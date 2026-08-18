@@ -70,6 +70,16 @@ python train_method_b.py --epochs 3 --batch-size 8
 
 After training, the model artifacts are saved to `models/method_b_bert/` and are loaded automatically by `app.py`.
 
+The saved BERT weights are larger than GitHub's normal 100 MB file limit. This repository includes Git LFS tracking for them. Before pushing, run:
+
+```bash
+git lfs install
+git add .gitattributes models/method_b_bert
+git add .
+git commit -m "Add trained Method B model"
+git push
+```
+
 ## Method C (Rasa)
 
 Install Rasa separately (optional dependency), then train and run server:
@@ -81,7 +91,7 @@ rasa train
 rasa run --enable-api --cors "*" --port 5005
 ```
 
-`app.py` calls `http://localhost:5005/model/parse`, so keep that Rasa server running during Method C demo.
+`app.py` calls `http://localhost:5005/model/parse` by default, so keep that Rasa server running during a local Method C demo. For Streamlit Cloud, deploy Rasa as a separate public service and set its parse endpoint through `RASA_URL`, for example `https://your-rasa-service.example.com/model/parse`.
 
 ## Demo features
 
@@ -97,7 +107,7 @@ rasa run --enable-api --cors "*" --port 5005
 2. Retrain Method A using `python train_method_a.py`.
 3. Improve `train_method_b.py` hyperparameters or dataset size for better Method B accuracy.
 4. Expand `rasa_project/data/nlu.yml` and retrain Rasa for stronger Method C intent quality.
-4. Keep the same intent names across the team so comparison is fair.
+5. Keep the same intent names across the team so comparison is fair.
 
 ## Common intents
 
