@@ -105,6 +105,8 @@ def render_answer_box(method_name: str, intent: str, confidence: float):
 
 if "chat_history" not in st.session_state:
     st.session_state.chat_history = []
+if "quick_question" not in st.session_state:
+    st.session_state.quick_question = ""
 
 
 # ---------------------------------------------------------------------------
@@ -123,18 +125,17 @@ for question in EXAMPLE_QUESTIONS:
     if st.sidebar.button(question, key=f"q_{question}"):
         st.session_state.quick_question = question
 
-if hasattr(st.session_state, "quick_question"):
-    user_input = st.session_state.quick_question
-else:
-    user_input = ""
-
 if mode == "Single method":
-    if user_input:
-        prompt = user_input
-    else:
-        prompt = st.chat_input("Ask a question about campus services...")
+    with st.form(key="single_method_form"):
+        prompt = st.text_input(
+            "Ask a question about campus services...",
+            value=st.session_state.quick_question,
+            placeholder="e.g. how do I check my exam timetable?",
+        )
+        submitted = st.form_submit_button("Send")
 
-    if prompt:
+    if submitted and prompt.strip():
+        st.session_state.quick_question = ""
         predict_fn = METHODS[selected_method]
         intent, confidence = predict_fn(prompt)
         reply = get_reply(intent, confidence)
@@ -157,12 +158,16 @@ if mode == "Single method":
                 st.chat_message("assistant").write(item["text"])
 
 else:
-    if user_input:
-        prompt = user_input
-    else:
-        prompt = st.chat_input("Ask a question to compare all methods...")
+    with st.form(key="compare_form"):
+        prompt = st.text_input(
+            "Ask a question to compare all methods...",
+            value=st.session_state.quick_question,
+            placeholder="e.g. where can I pay my tuition fee?",
+        )
+        submitted = st.form_submit_button("Compare")
 
-    if prompt:
+    if submitted and prompt.strip():
+        st.session_state.quick_question = ""
         st.subheader("Side-by-side comparison")
         cols = st.columns(3)
         for col, (method_name, predict_fn) in zip(cols, METHODS.items()):
