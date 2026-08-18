@@ -44,7 +44,7 @@ def predict_method_a(text: str):
     if not isinstance(text, str):
         text = str(text)
 
-    cleaner = " ".join(text.strip().lower().split())
+    cleaner = normalize_text(text)
     if not cleaner:
         return "fallback", 0.0
 
@@ -59,6 +59,9 @@ def predict_method_a(text: str):
 
     if guess_score > 0 and (confidence < 0.5 or intent == "fallback"):
         return guessed_intent, max(confidence, 0.45)
+
+    if guess_score >= 4 and intent != guessed_intent:
+        return guessed_intent, min(max(confidence, 0.55), 0.88)
 
     return intent, confidence
 
@@ -89,44 +92,108 @@ def get_reply(intent: str, confidence: float) -> str:
 KEYWORD_PATTERNS = {
     "exam_timetable": [
         "exam timetable", "exam schedule", "exam date", "final exam", "final timetable",
-        "exam time", "timetable", "schedule", "exam date", "paper schedule", "exam slot"
+        "exam time", "timetable", "schedule", "paper schedule", "exam slot", "exam dates",
+        "exam venue", "test schedule", "finals", "exam info", "date for exam"
     ],
     "course_registration": [
         "register course", "register subject", "add subject", "drop subject", "course registration",
         "subject registration", "enrol", "enroll", "course add drop", "add-drop",
-        "choose subject", "register class", "select course"
+        "choose subject", "register class", "select course", "subject selection", "register classes",
+        "course add", "add course", "drop course", "elective", "change class section", "register subjek"
     ],
     "fee_payment": [
         "pay fee", "tuition fee", "semester fee", "yuran", "payment", "pay school fee",
-        "fee payment", "outstanding fee", "installment", "tuition payment", "pay fees"
+        "fee payment", "outstanding fee", "installment", "tuition payment", "pay fees",
+        "pay semester charges", "fee balance", "remaining balance", "settle fee", "bank transfer"
     ],
     "hostel_application": [
         "hostel", "asrama", "dorm", "residential", "room application", "stay hostel",
-        "apply hostel", "hostel application", "accommodation", "room booking"
+        "apply hostel", "hostel application", "accommodation", "room booking", "hostel form",
+        "hostel room", "residential application", "stay in hostel"
     ],
     "library_service": [
         "library", "borrow book", "return book", "renew book", "library hours", "library open",
-        "borrow books", "library portal", "database", "book loan", "library service"
+        "borrow books", "library portal", "database", "book loan", "library service",
+        "book due date", "borrow textbook", "renew book", "return borrowed books", "e-book"
     ],
     "it_support": [
         "wifi", "campus wifi", "internet", "network", "portal login", "password reset",
         "student portal", "login problem", "cannot login", "email password", "it support",
-        "computer problem", "reset password", "wifi cannot connect", "portal problem"
+        "computer problem", "reset password", "wifi cannot connect", "portal problem", "sign in",
+        "forgot password", "connection issue", "session expired"
     ],
 }
+
+SLANG_REPLACEMENTS = {
+    "cant": "cannot",
+    "cannot": "cannot",
+    "camne": "how",
+    "cane": "how",
+    "nak": "want",
+    "tau": "know",
+    "tak": "not",
+    "tk": "not",
+    "dah": "already",
+    "kat": "at",
+    "mana": "where",
+    "bila": "when",
+    "macam": "like",
+    "mcm": "like",
+    "subjek": "subject",
+    "asrama": "hostel",
+    "yuran": "fee",
+    "portal": "portal",
+    "wifi": "wifi",
+    "login": "login",
+    "password": "password",
+    "reset": "reset",
+    "book": "book",
+    "library": "library",
+    "exam": "exam",
+    "timetable": "timetable",
+    "gila": "very",
+    "lah": "",
+    "ah": "",
+    "leh": "",
+    "ha": "",
+    "eh": "",
+    "ma": "",
+}
+
+
+def normalize_text(text: str) -> str:
+    if not isinstance(text, str):
+        text = str(text)
+
+    cleaned = text.lower().strip()
+    cleaned = cleaned.replace("?", " ").replace("!", " ").replace(".", " ")
+    cleaned = " ".join(cleaned.split())
+
+    for slang, replacement in SLANG_REPLACEMENTS.items():
+        cleaned = cleaned.replace(slang, replacement)
+
+    cleaned = " ".join(cleaned.split())
+    return cleaned
 
 
 def keyword_intent_guess(text: str):
     if not isinstance(text, str):
         text = str(text)
 
-    cleaned = text.lower().strip()
+    cleaned = normalize_text(text)
     if not cleaned:
         return "fallback", 0
 
     scores = []
     for intent, keywords in KEYWORD_PATTERNS.items():
-        score = sum(1 for kw in keywords if kw in cleaned)
+        score = 0
+        for kw in keywords:
+            if kw in cleaned:
+                score += 2
+        if intent in ["exam_timetable", "course_registration", "fee_payment", "hostel_application", "library_service", "it_support"]:
+            phrase_hits = sum(1 for intent_key in [intent] if intent_key in cleaned)
+            if phrase_hits:
+                score += 1
         scores.append((intent, score))
 
     best_intent, best_score = max(scores, key=lambda item: item[1])
