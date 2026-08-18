@@ -48,12 +48,18 @@ def predict_method_a(text: str):
     if not cleaner:
         return "fallback", 0.0
 
+    guessed_intent, guess_score = keyword_intent_guess(cleaner)
+
     vectorizer, clf, label_encoder = load_method_a()
     X = vectorizer.transform([cleaner])
     probs = clf.predict_proba(X)[0]
     best_idx = probs.argmax()
     intent = label_encoder.inverse_transform([best_idx])[0]
     confidence = float(probs[best_idx])
+
+    if guess_score > 0 and (confidence < 0.5 or intent == "fallback"):
+        return guessed_intent, max(confidence, 0.45)
+
     return intent, confidence
 
 
@@ -78,6 +84,53 @@ def get_reply(intent: str, confidence: float) -> str:
     if confidence < CONFIDENCE_THRESHOLD or intent not in RESPONSES:
         return RESPONSES["fallback"]
     return RESPONSES[intent]
+
+
+KEYWORD_PATTERNS = {
+    "exam_timetable": [
+        "exam timetable", "exam schedule", "exam date", "final exam", "final timetable",
+        "exam time", "timetable", "schedule", "exam date", "paper schedule", "exam slot"
+    ],
+    "course_registration": [
+        "register course", "register subject", "add subject", "drop subject", "course registration",
+        "subject registration", "enrol", "enroll", "course add drop", "add-drop",
+        "choose subject", "register class", "select course"
+    ],
+    "fee_payment": [
+        "pay fee", "tuition fee", "semester fee", "yuran", "payment", "pay school fee",
+        "fee payment", "outstanding fee", "installment", "tuition payment", "pay fees"
+    ],
+    "hostel_application": [
+        "hostel", "asrama", "dorm", "residential", "room application", "stay hostel",
+        "apply hostel", "hostel application", "accommodation", "room booking"
+    ],
+    "library_service": [
+        "library", "borrow book", "return book", "renew book", "library hours", "library open",
+        "borrow books", "library portal", "database", "book loan", "library service"
+    ],
+    "it_support": [
+        "wifi", "campus wifi", "internet", "network", "portal login", "password reset",
+        "student portal", "login problem", "cannot login", "email password", "it support",
+        "computer problem", "reset password", "wifi cannot connect", "portal problem"
+    ],
+}
+
+
+def keyword_intent_guess(text: str):
+    if not isinstance(text, str):
+        text = str(text)
+
+    cleaned = text.lower().strip()
+    if not cleaned:
+        return "fallback", 0
+
+    scores = []
+    for intent, keywords in KEYWORD_PATTERNS.items():
+        score = sum(1 for kw in keywords if kw in cleaned)
+        scores.append((intent, score))
+
+    best_intent, best_score = max(scores, key=lambda item: item[1])
+    return best_intent, best_score
 
 
 METHODS = {
