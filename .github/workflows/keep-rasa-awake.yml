@@ -1,0 +1,13 @@
+name: Keep Rasa awake
+
+on:
+  schedule:
+    - cron: "*/10 * * * *"
+  workflow_dispatch:
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping Rasa health endpoint
+        run: curl -sS -m 20 "${{ secrets.RASA_PING_URL }}" || true
