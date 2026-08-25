@@ -1,0 +1,9 @@
+Response Relevancy Evaluation (BLEU / ROUGE-L)
+
+Caveat: responses are fixed canned text per intent, so these scores mainly reflect
+whether each method retrieved the correct intent's response, not generation quality.
+
+Method                            Avg BLEU   Avg ROUGE-L
+Method A (TF-IDF + SVM)             0.8353        0.8567
+Method B (multilingual BERT)        0.9671        0.9716
+Method C (Rasa)                     0.8386        0.8654

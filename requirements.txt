@@ -5,6 +5,8 @@ joblib
 requests
 transformers
 torch
+nltk
+rouge-score
 
 # Optional for Method C (Rasa). Keep separate if you want lighter installs:
 # rasa

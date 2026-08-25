@@ -1,0 +1,31 @@
+text,intent
+how can I know when my exams are,exam_timetable
+where do I look for the finals schedule,exam_timetable
+bila nak keluar exam timetable,exam_timetable
+几时可以看到考试表,exam_timetable
+exam paper timing macam mana nak tau,exam_timetable
+how to add a new subject this semester,course_registration
+where do I sign up for elective classes,course_registration
+macam mana nak tambah kelas baru,course_registration
+我要怎么加课,course_registration
+can I still register subject after deadline,course_registration
+where do I settle my tuition bill,fee_payment
+macam mana nak bayar fee semester ni,fee_payment
+学费还没交怎么办,fee_payment
+is there a late fee payment charge,fee_payment
+can I pay school fee using credit card,fee_payment
+how to apply for a hostel room online,hostel_application
+macam mana nak mohon bilik asrama,hostel_application
+宿舍申请流程是什么,hostel_application
+when will hostel results be announced,hostel_application
+is it too late to apply for accommodation,hostel_application
+how long can I keep a borrowed book,library_service
+macam mana nak renew buku library,library_service
+图书馆的电子资源怎么用,library_service
+where do I return library books after hours,library_service
+can non-students access the library,library_service
+my laptop cannot connect to campus network,it_support
+macam mana nak repair wifi kat hostel,it_support
+学生邮箱密码要怎么改,it_support
+who do I email for portal technical issues,it_support
+the student portal keeps showing an error,it_support

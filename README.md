@@ -109,6 +109,26 @@ RASA_URL = "https://campus-faq-rasa.onrender.com/model/parse"
 
 Render's free service can sleep after inactivity, so the first Method C request after a pause may take longer.
 
+## Testing and evaluation
+
+Run the fixed held-out test set (`data/test_set.csv`, phrased differently from the training data) against all three methods:
+
+```bash
+python evaluate_methods.py --rasa-url https://your-rasa-service.onrender.com/model/parse
+```
+
+This prints and saves Accuracy, Precision, Recall, and F1 (macro-averaged) per method to `models/evaluation_report.txt`, plus per-question predictions to `data/evaluation_results.csv`.
+
+Then evaluate response relevancy with BLEU/ROUGE-L:
+
+```bash
+python evaluate_response_relevancy.py
+```
+
+This compares each method's predicted-intent response against the reference response for the true intent, and saves the result to `models/response_relevancy_report.txt`. Since responses are fixed canned text per intent (see `data/responses.py`), these scores mainly reflect whether each method retrieved the *correct* intent, not free-text generation quality — this caveat is included in the report.
+
+User feedback (Yes/No + optional comment) collected from the app is stored in `data/feedback.csv` for summarizing satisfaction rates in your report.
+
 ## Demo features
 
 - Ask a question in single-method mode
@@ -116,6 +136,7 @@ Render's free service can sleep after inactivity, so the first Method C request 
 - Quick example buttons for common FAQ questions
 - Conversation history in the chat area
 - Fallback reply when confidence is low or intent is unknown
+- Yes/No feedback with optional comment after each response
 
 ## How to extend it
 

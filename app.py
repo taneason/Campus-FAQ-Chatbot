@@ -11,6 +11,7 @@ Run with:
 """
 
 import os
+from datetime import datetime, timezone
 from pathlib import Path
 
 import joblib
@@ -22,6 +23,37 @@ from data.responses import CONFIDENCE_THRESHOLD, RESPONSES
 st.set_page_config(page_title="Campus FAQ Chatbot", page_icon="🎓", layout="wide")
 
 MODEL_DIR = Path(__file__).resolve().parent / "models"
+FEEDBACK_PATH = Path(__file__).resolve().parent / "data" / "feedback.csv"
+FEEDBACK_COLUMNS = ["timestamp", "question", "method", "intent", "confidence", "helpful", "comment"]
+
+
+def save_feedback(question: str, method_name: str, intent: str, confidence: float, helpful: str, comment: str) -> None:
+    FEEDBACK_PATH.parent.mkdir(parents=True, exist_ok=True)
+    is_new_file = not FEEDBACK_PATH.exists()
+
+    row = {
+        "timestamp": datetime.now(timezone.utc).isoformat(),
+        "question": question,
+        "method": method_name,
+        "intent": intent,
+        "confidence": f"{confidence:.2f}",
+        "helpful": helpful,
+        "comment": comment.replace("\n", " ").strip(),
+    }
+
+    with FEEDBACK_PATH.open("a", encoding="utf-8", newline="") as f:
+        if is_new_file:
+            f.write(",".join(FEEDBACK_COLUMNS) + "\n")
+        f.write(",".join(f'"{row[col]}"' for col in FEEDBACK_COLUMNS) + "\n")
+
+
+def render_feedback_form(form_key: str, question: str, method_name: str, intent: str, confidence: float) -> None:
+    with st.form(key=form_key):
+        helpful = st.radio("Was this answer helpful?", ["Yes", "No"], horizontal=True, key=f"{form_key}_helpful")
+        comment = st.text_input("Optional comment", key=f"{form_key}_comment")
+        if st.form_submit_button("Submit feedback"):
+            save_feedback(question, method_name, intent, confidence, helpful, comment)
+            st.success("Thanks for your feedback!")
 
 
 # ---------------------------------------------------------------------------
@@ -226,6 +258,8 @@ if mode == "Single method":
                 st.write(f"Intent: `{intent}`")
                 st.write(f"Confidence: `{confidence:.2f}`")
 
+            render_feedback_form("single_feedback", prompt, selected_method, intent, confidence)
+
     if st.session_state.chat_history:
         st.subheader("Conversation history")
         for item in st.session_state.chat_history:
@@ -247,10 +281,12 @@ else:
         st.session_state.quick_question = ""
         st.subheader("Side-by-side comparison")
         cols = st.columns(3)
-        for col, (method_name, predict_fn) in zip(cols, METHODS.items()):
+        for idx, (col, (method_name, predict_fn)) in enumerate(zip(cols, METHODS.items())):
             with col:
                 intent, confidence = predict_fn(prompt)
                 render_answer_box(method_name, intent, confidence)
+                if intent not in ("waking_up", "not_implemented"):
+                    render_feedback_form(f"compare_feedback_{idx}", prompt, method_name, intent, confidence)
 
 st.sidebar.markdown("---")
 st.sidebar.caption(
