@@ -27,6 +27,7 @@ MODEL_DIR = BASE_DIR / "models"
 TEST_SET_PATH = BASE_DIR / "data" / "test_set.csv"
 RESULTS_PATH = BASE_DIR / "data" / "evaluation_results.csv"
 REPORT_PATH = BASE_DIR / "models" / "evaluation_report.txt"
+METRICS_CSV_PATH = BASE_DIR / "data" / "evaluation_metrics.csv"
 
 
 def parse_args() -> argparse.Namespace:
@@ -94,7 +95,10 @@ def evaluate(y_true, y_pred, label: str) -> dict:
 
 def main():
     args = parse_args()
+    run_evaluation(args.rasa_url)
 
+
+def run_evaluation(rasa_url: str) -> list[dict]:
     if not TEST_SET_PATH.exists():
         raise FileNotFoundError(f"Test set not found: {TEST_SET_PATH}")
 
@@ -123,7 +127,7 @@ def main():
     # Method C
     preds_c = []
     try:
-        preds_c = [predict_method_c(q, args.rasa_url) for q in questions]
+        preds_c = [predict_method_c(q, rasa_url) for q in questions]
         metrics.append(evaluate(y_true, preds_c, "Method C (Rasa)"))
     except Exception as exc:  # pragma: no cover
         print(f"Skipping Method C: {exc}")
@@ -156,8 +160,15 @@ def main():
 
     REPORT_PATH.write_text("\n".join(report_lines) + "\n", encoding="utf-8")
 
+    with METRICS_CSV_PATH.open("w", encoding="utf-8", newline="") as f:
+        writer = csv.DictWriter(f, fieldnames=["method", "accuracy", "precision", "recall", "f1"])
+        writer.writeheader()
+        writer.writerows(metrics)
+
     print(f"\nSaved per-question predictions: {RESULTS_PATH}")
     print(f"Saved comparison report: {REPORT_PATH}")
+    print(f"Saved metrics CSV: {METRICS_CSV_PATH}")
+    return metrics
 
 
 if __name__ == "__main__":

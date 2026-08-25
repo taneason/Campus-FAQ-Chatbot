@@ -29,6 +29,7 @@ from data.responses import RESPONSES
 BASE_DIR = Path(__file__).resolve().parent
 RESULTS_PATH = BASE_DIR / "data" / "evaluation_results.csv"
 REPORT_PATH = BASE_DIR / "models" / "response_relevancy_report.txt"
+METRICS_CSV_PATH = BASE_DIR / "data" / "response_relevancy_metrics.csv"
 
 METHOD_COLUMNS = {
     "Method A (TF-IDF + SVM)": "method_a_pred",
@@ -50,6 +51,10 @@ def score_pair(reference: str, candidate: str, scorer: rouge_scorer.RougeScorer,
 
 
 def main():
+    run_relevancy_evaluation()
+
+
+def run_relevancy_evaluation() -> pd.DataFrame:
     nltk.download("punkt", quiet=True)
 
     if not RESULTS_PATH.exists():
@@ -67,6 +72,7 @@ def main():
         "",
         f"{'Method':<30}{'Avg BLEU':>12}{'Avg ROUGE-L':>14}",
     ]
+    metrics_rows = []
 
     for method_name, pred_col in METHOD_COLUMNS.items():
         bleu_scores = []
@@ -83,8 +89,16 @@ def main():
         report_lines.append(f"{method_name:<30}{avg_bleu:>12.4f}{avg_rouge:>14.4f}")
         print(f"{method_name}: avg_bleu={avg_bleu:.4f} avg_rouge_l={avg_rouge:.4f}")
 
+        metrics_rows.append({"method": method_name, "avg_bleu": avg_bleu, "avg_rouge_l": avg_rouge})
+
     REPORT_PATH.write_text("\n".join(report_lines) + "\n", encoding="utf-8")
+
+    metrics_df = pd.DataFrame(metrics_rows)
+    metrics_df.to_csv(METRICS_CSV_PATH, index=False)
+
     print(f"\nSaved report: {REPORT_PATH}")
+    print(f"Saved metrics CSV: {METRICS_CSV_PATH}")
+    return metrics_df
 
 
 if __name__ == "__main__":

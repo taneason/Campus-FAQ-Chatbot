@@ -15,6 +15,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 import joblib
+import pandas as pd
 import requests
 import streamlit as st
 
@@ -23,7 +24,8 @@ from data.responses import CONFIDENCE_THRESHOLD, RESPONSES
 st.set_page_config(page_title="Campus FAQ Chatbot", page_icon="🎓", layout="wide")
 
 MODEL_DIR = Path(__file__).resolve().parent / "models"
-FEEDBACK_PATH = Path(__file__).resolve().parent / "data" / "feedback.csv"
+DATA_DIR = Path(__file__).resolve().parent / "data"
+FEEDBACK_PATH = DATA_DIR / "feedback.csv"
 FEEDBACK_COLUMNS = ["timestamp", "question", "method", "intent", "confidence", "helpful", "comment"]
 
 
@@ -219,7 +221,7 @@ st.title("🎓 Campus FAQ Chatbot")
 st.caption("Multilingual (English / Bahasa Malaysia / Mandarin / Manglish) campus assistant")
 
 st.sidebar.header("Controls")
-mode = st.sidebar.radio("Mode", ["Single method", "Compare all 3 methods"])
+mode = st.sidebar.radio("Mode", ["Single method", "Compare all 3 methods", "Evaluation"])
 selected_method = st.sidebar.selectbox("Choose method", list(METHODS.keys()))
 
 st.sidebar.markdown("---")
@@ -268,7 +270,7 @@ if mode == "Single method":
             else:
                 st.chat_message("assistant").write(item["text"])
 
-else:
+elif mode == "Compare all 3 methods":
     with st.form(key="compare_form"):
         prompt = st.text_input(
             "Ask a question to compare all methods...",
@@ -287,7 +289,59 @@ else:
                 render_answer_box(method_name, intent, confidence)
                 if intent not in ("waking_up", "not_implemented"):
                     render_feedback_form(f"compare_feedback_{idx}", prompt, method_name, intent, confidence)
+else:
+    st.subheader("Evaluation results")
+    st.caption("Run the buttons below on demand; nothing here runs unless you click a button.")
 
+    st.markdown("#### Intent classification (Accuracy / Precision / Recall / F1)")
+    intent_metrics_path = DATA_DIR / "evaluation_metrics.csv"
+    if st.button("Run intent classification evaluation"):
+        with st.spinner("Running Method A / B / C on the fixed test set..."):
+            from evaluate_methods import run_evaluation
+
+            run_evaluation(RASA_URL)
+        st.success("Done. Table refreshed below.")
+    if intent_metrics_path.exists():
+        st.dataframe(pd.read_csv(intent_metrics_path), use_container_width=True)
+    else:
+        st.info("Not generated yet. Click the button above to run it.")
+
+    st.markdown("#### Response relevancy (BLEU / ROUGE-L)")
+    st.caption(
+        "Responses are fixed canned text per intent, so these scores mainly reflect whether each method "
+        "retrieved the correct intent, not free-text generation quality."
+    )
+    relevancy_metrics_path = DATA_DIR / "response_relevancy_metrics.csv"
+    if st.button("Run response relevancy evaluation"):
+        results_path = DATA_DIR / "evaluation_results.csv"
+        if not results_path.exists():
+            st.warning("Run the intent classification evaluation first (it produces the predictions needed here).")
+        else:
+            with st.spinner("Scoring BLEU / ROUGE-L..."):
+                from evaluate_response_relevancy import run_relevancy_evaluation
+
+                run_relevancy_evaluation()
+            st.success("Done. Table refreshed below.")
+    if relevancy_metrics_path.exists():
+        st.dataframe(pd.read_csv(relevancy_metrics_path), use_container_width=True)
+    else:
+        st.info("Not generated yet. Click the button above to run it.")
+
+    st.markdown("#### User feedback (helpful %)")
+    if FEEDBACK_PATH.exists():
+        feedback_df = pd.read_csv(FEEDBACK_PATH)
+        if not feedback_df.empty:
+            summary = (
+                feedback_df.groupby("method")["helpful"]
+                .apply(lambda col: (col == "Yes").mean() * 100)
+                .reset_index(name="helpful_pct")
+            )
+            summary["total_responses"] = feedback_df.groupby("method").size().values
+            st.dataframe(summary, use_container_width=True)
+        else:
+            st.info("No feedback collected yet. Feedback appears here once users submit the feedback form.")
+    else:
+        st.info("No feedback collected yet. Feedback appears here once users submit the feedback form.")
 st.sidebar.markdown("---")
 st.sidebar.caption(
     "Method A is fully implemented and trained. Method B requires a local BERT model in models/method_b_bert; "
