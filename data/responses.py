@@ -29,6 +29,33 @@ RESPONSES = {
         "For IT issues such as campus Wi-Fi, portal login, password reset, or email access, please contact the IT Helpdesk or email itsupport@tarumt.edu.my. "
         "Before contacting them, make sure your login credentials are correct and try reconnecting to the campus network or resetting your password via the portal."
     ),
+    "class_timetable": (
+        "Your weekly class timetable is available in the Student Portal: Academic > Class Timetable. "
+        "If a class or venue looks wrong, confirm your course registration is finalized and contact the Academic Office to correct the timetable."
+    ),
+    "student_id_card": (
+        "New or replacement student ID cards are issued at the Student Affairs counter; bring your admission letter or a police report if the card is lost. "
+        "There may be a small replacement fee, which you can check with the Student Affairs Office."
+    ),
+    "scholarship_financial_aid": (
+        "Scholarship and financial aid applications are submitted through the Student Portal > Financial Aid > Scholarship Application within the announced application period. "
+        "Check your eligibility requirements first, and contact the Student Financial Aid Office if you need help with documents or application status."
+    ),
+    "transcript_request": (
+        "Official transcripts and academic statements can be requested through the Student Portal > Academic > Transcript Request, usually with a processing fee. "
+        "Processing takes a few working days; contact the Academic/Examinations Office if you need it urgently or the request status is unclear."
+    ),
+    "counseling_service": (
+        "Free and confidential counseling support is available through the Student Counseling Center; you can book an appointment via the Student Portal or walk in during office hours. "
+        "If it's urgent, please contact the counseling center directly or campus security for immediate assistance."
+    ),
+    "parking_permit": (
+        "Campus parking permits are applied for through the Student Portal > Facilities > Parking Permit, subject to available quota. "
+        "Bring your vehicle registration details, and contact the Facilities/Security Office if your permit application is rejected or delayed."
+    ),
+    "greeting": (
+        "Hello! I'm the Campus FAQ Assistant. Ask me about exams, course registration, fees, hostel, library, IT support, and more."
+    ),
     "fallback": (
         "Sorry, I'm not fully confident about that yet. Please rephrase your question or contact the relevant office directly for the most accurate answer."
     ),

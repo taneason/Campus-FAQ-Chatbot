@@ -31,6 +31,41 @@ rules:
       - intent: it_support
       - action: utter_it_support
 
+  - rule: Reply class timetable
+    steps:
+      - intent: class_timetable
+      - action: utter_class_timetable
+
+  - rule: Reply student ID card
+    steps:
+      - intent: student_id_card
+      - action: utter_student_id_card
+
+  - rule: Reply scholarship financial aid
+    steps:
+      - intent: scholarship_financial_aid
+      - action: utter_scholarship_financial_aid
+
+  - rule: Reply transcript request
+    steps:
+      - intent: transcript_request
+      - action: utter_transcript_request
+
+  - rule: Reply counseling service
+    steps:
+      - intent: counseling_service
+      - action: utter_counseling_service
+
+  - rule: Reply parking permit
+    steps:
+      - intent: parking_permit
+      - action: utter_parking_permit
+
+  - rule: Reply greeting
+    steps:
+      - intent: greeting
+      - action: utter_greeting
+
   - rule: Reply fallback
     steps:
       - intent: out_of_scope

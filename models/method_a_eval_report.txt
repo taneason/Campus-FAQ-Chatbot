@@ -1,23 +1,37 @@
 Method A - TF-IDF + SVM
-Accuracy: 0.794
+Accuracy: 0.793
 
-                     precision    recall  f1-score   support
+                           precision    recall  f1-score   support
 
-course_registration       0.71      0.83      0.77         6
-     exam_timetable       1.00      1.00      1.00         6
-        fee_payment       1.00      0.50      0.67         6
- hostel_application       0.80      0.80      0.80         5
-         it_support       0.60      1.00      0.75         6
-    library_service       1.00      0.60      0.75         5
+          class_timetable       0.67      1.00      0.80         4
+       counseling_service       0.50      0.33      0.40         3
+      course_registration       0.75      1.00      0.86         6
+           exam_timetable       1.00      0.83      0.91         6
+              fee_payment       1.00      0.83      0.91         6
+                 greeting       1.00      0.25      0.40         4
+       hostel_application       1.00      0.83      0.91         6
+               it_support       0.45      0.83      0.59         6
+          library_service       1.00      0.80      0.89         5
+           parking_permit       1.00      1.00      1.00         3
+scholarship_financial_aid       1.00      0.67      0.80         3
+          student_id_card       1.00      1.00      1.00         3
+       transcript_request       0.67      0.67      0.67         3
 
-           accuracy                           0.79        34
-          macro avg       0.85      0.79      0.79        34
-       weighted avg       0.85      0.79      0.79        34
+                 accuracy                           0.79        58
+                macro avg       0.85      0.77      0.78        58
+             weighted avg       0.85      0.79      0.79        58
 
 Confusion Matrix (rows=true, cols=pred):
-[[5 0 0 0 1 0]
- [0 6 0 0 0 0]
- [1 0 3 1 1 0]
- [1 0 0 4 0 0]
- [0 0 0 0 6 0]
- [0 0 0 0 2 3]]
+[[4 0 0 0 0 0 0 0 0 0 0 0 0]
+ [0 1 0 0 0 0 0 1 0 0 0 0 1]
+ [0 0 6 0 0 0 0 0 0 0 0 0 0]
+ [1 0 0 5 0 0 0 0 0 0 0 0 0]
+ [1 0 0 0 5 0 0 0 0 0 0 0 0]
+ [0 0 0 0 0 1 0 3 0 0 0 0 0]
+ [0 0 1 0 0 0 5 0 0 0 0 0 0]
+ [0 0 1 0 0 0 0 5 0 0 0 0 0]
+ [0 0 0 0 0 0 0 1 4 0 0 0 0]
+ [0 0 0 0 0 0 0 0 0 3 0 0 0]
+ [0 1 0 0 0 0 0 0 0 0 2 0 0]
+ [0 0 0 0 0 0 0 0 0 0 0 3 0]
+ [0 0 0 0 0 0 0 1 0 0 0 0 2]]

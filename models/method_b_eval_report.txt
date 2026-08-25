@@ -1,18 +1,25 @@
 Method B: multilingual-BERT Evaluation
 Base model: bert-base-multilingual-cased
-Validation accuracy: 0.8824
+Validation accuracy: 0.5345
 
 Classification report:
-                     precision    recall  f1-score   support
+                           precision    recall  f1-score   support
 
-course_registration       0.83      0.83      0.83         6
-     exam_timetable       1.00      1.00      1.00         6
-        fee_payment       1.00      1.00      1.00         6
- hostel_application       1.00      0.80      0.89         5
-         it_support       0.67      1.00      0.80         6
-    library_service       1.00      0.60      0.75         5
+          class_timetable       0.00      0.00      0.00         4
+       counseling_service       0.00      0.00      0.00         3
+      course_registration       0.36      0.83      0.50         6
+           exam_timetable       0.62      0.83      0.71         6
+              fee_payment       0.36      0.83      0.50         6
+                 greeting       0.00      0.00      0.00         4
+       hostel_application       1.00      0.67      0.80         6
+               it_support       1.00      0.83      0.91         6
+          library_service       0.75      0.60      0.67         5
+           parking_permit       0.00      0.00      0.00         3
+scholarship_financial_aid       0.00      0.00      0.00         3
+          student_id_card       0.38      1.00      0.55         3
+       transcript_request       1.00      0.33      0.50         3
 
-           accuracy                           0.88        34
-          macro avg       0.92      0.87      0.88        34
-       weighted avg       0.91      0.88      0.88        34
+                 accuracy                           0.53        58
+                macro avg       0.42      0.46      0.40        58
+             weighted avg       0.48      0.53      0.47        58
 

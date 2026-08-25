@@ -67,6 +67,72 @@ nlu:
       - cannot login student portal help
       - who can I contact for IT problem
 
+  - intent: class_timetable
+    examples: |
+      - where can I see my weekly class schedule
+      - how do I check my class timetable
+      - macam mana nak tengok jadual kelas
+      - 怎么查看我的课程表
+      - what time is my class today
+      - where is my lecture venue
+      - my class schedule looks wrong
+
+  - intent: student_id_card
+    examples: |
+      - how do I get a new student ID card
+      - where to replace lost student card
+      - macam mana nak buat kad pelajar baru
+      - 学生证怎么补办
+      - student ID card hilang macam mana
+      - how much does a replacement ID card cost
+
+  - intent: scholarship_financial_aid
+    examples: |
+      - how to apply for scholarship
+      - where to check financial aid application status
+      - macam mana nak mohon biasiswa
+      - 怎么申请奖学金
+      - am I eligible for student loan
+      - scholarship application deadline bila
+
+  - intent: transcript_request
+    examples: |
+      - how to request my official transcript
+      - where can I get my academic transcript
+      - macam mana nak mohon transkrip
+      - 怎么申请成绩单
+      - transcript request processing time berapa lama
+      - need transcript for job application
+
+  - intent: counseling_service
+    examples: |
+      - how do I book a counseling appointment
+      - where can I get mental health support
+      - macam mana nak jumpa kaunselor
+      - 怎么预约心理辅导
+      - I am feeling stressed who can I talk to
+      - is student counseling free
+
+  - intent: parking_permit
+    examples: |
+      - how do I apply for a campus parking permit
+      - where to register my car for campus parking
+      - macam mana nak mohon permit parking
+      - 怎么申请校园停车证
+      - parking permit application rejected why
+      - is there parking fee for students
+
+  - intent: greeting
+    examples: |
+      - hi
+      - hello
+      - hi there
+      - good morning
+      - hai
+      - helo
+      - 你好
+      - apa khabar
+
   - intent: out_of_scope
     examples: |
       - tell me a joke
