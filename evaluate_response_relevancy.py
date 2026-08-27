@@ -34,7 +34,7 @@ METRICS_CSV_PATH = BASE_DIR / "data" / "response_relevancy_metrics.csv"
 METHOD_COLUMNS = {
     "Method A (TF-IDF + SVM)": "method_a_pred",
     "Method B (multilingual BERT)": "method_b_pred",
-    "Method C (Rasa)": "method_c_pred",
+    "Method C (Sentence Transformers)": "method_c_pred",
 }
 
 

@@ -1,0 +1,4 @@
+method,total_responses,helpful_count,helpful_pct
+Method A - TF-IDF + SVM (Traditional ML),10,7,70.0
+Method B - Multilingual BERT (Deep Learning),10,8,80.0
+Method C - Sentence Transformers (Semantic Search),10,10,100.0

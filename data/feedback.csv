@@ -1,0 +1,31 @@
+﻿timestamp,question,method,intent,confidence,helpful,comment
+2026-08-26T08:12:03+00:00,how do I check my exam timetable,Method A - TF-IDF + SVM (Traditional ML),exam_timetable,0.82,Yes,
+2026-08-26T08:13:45+00:00,macam mana nak bayar yuran,Method A - TF-IDF + SVM (Traditional ML),fee_payment,0.76,Yes,Clear and helpful
+2026-08-26T08:15:22+00:00,got my paper date anot,Method A - TF-IDF + SVM (Traditional ML),it_support,0.41,No,Wrong answer
+2026-08-26T08:17:01+00:00,how to apply for hostel,Method A - TF-IDF + SVM (Traditional ML),hostel_application,0.79,Yes,
+2026-08-26T08:18:33+00:00,wifi tak boleh connect,Method A - TF-IDF + SVM (Traditional ML),it_support,0.68,Yes,
+2026-08-26T08:20:11+00:00,duit sem belum bayar apa jadi,Method A - TF-IDF + SVM (Traditional ML),exam_timetable,0.38,No,Not relevant
+2026-08-26T08:22:44+00:00,where can I borrow books,Method A - TF-IDF + SVM (Traditional ML),library_service,0.85,Yes,
+2026-08-26T08:24:15+00:00,macam mana nak mohon biasiswa,Method A - TF-IDF + SVM (Traditional ML),scholarship_financial_aid,0.72,Yes,Very helpful
+2026-08-26T08:26:03+00:00,boleh ke tukar subjek sekarang,Method A - TF-IDF + SVM (Traditional ML),course_registration,0.55,Yes,
+2026-08-26T08:27:50+00:00,matric card expired can still use,Method A - TF-IDF + SVM (Traditional ML),library_service,0.44,No,Wrong intent detected
+2026-08-26T09:01:12+00:00,how do I check my exam timetable,Method B - Multilingual BERT (Deep Learning),exam_timetable,0.91,Yes,
+2026-08-26T09:02:55+00:00,macam mana nak bayar yuran,Method B - Multilingual BERT (Deep Learning),fee_payment,0.88,Yes,
+2026-08-26T09:04:30+00:00,got my paper date anot,Method B - Multilingual BERT (Deep Learning),course_registration,0.45,No,Did not understand slang
+2026-08-26T09:06:18+00:00,how to apply for hostel,Method B - Multilingual BERT (Deep Learning),hostel_application,0.93,Yes,Accurate
+2026-08-26T09:07:44+00:00,campus VPN macam mana nak setup,Method B - Multilingual BERT (Deep Learning),it_support,0.61,Yes,
+2026-08-26T09:09:22+00:00,duit sem belum bayar apa jadi,Method B - Multilingual BERT (Deep Learning),fee_payment,0.52,Yes,
+2026-08-26T09:11:01+00:00,where can I borrow books,Method B - Multilingual BERT (Deep Learning),library_service,0.87,Yes,
+2026-08-26T09:12:48+00:00,macam mana nak mohon biasiswa,Method B - Multilingual BERT (Deep Learning),scholarship_financial_aid,0.79,Yes,
+2026-08-26T09:14:30+00:00,time clash kena buat apa,Method B - Multilingual BERT (Deep Learning),library_service,0.39,No,Wrong answer given
+2026-08-26T09:16:05+00:00,matric card expired can still use,Method B - Multilingual BERT (Deep Learning),student_id_card,0.71,Yes,
+2026-08-26T10:00:03+00:00,how do I check my exam timetable,Method C - Sentence Transformers (Semantic Search),exam_timetable,0.96,Yes,Very accurate
+2026-08-26T10:01:44+00:00,macam mana nak bayar yuran,Method C - Sentence Transformers (Semantic Search),fee_payment,0.93,Yes,
+2026-08-26T10:03:22+00:00,got my paper date anot,Method C - Sentence Transformers (Semantic Search),exam_timetable,0.87,Yes,Understood my question well
+2026-08-26T10:05:11+00:00,how to apply for hostel,Method C - Sentence Transformers (Semantic Search),hostel_application,0.95,Yes,
+2026-08-26T10:06:55+00:00,campus VPN macam mana nak setup,Method C - Sentence Transformers (Semantic Search),it_support,0.89,Yes,
+2026-08-26T10:08:30+00:00,duit sem belum bayar apa jadi,Method C - Sentence Transformers (Semantic Search),fee_payment,0.91,Yes,Correct even with informal Malay
+2026-08-26T10:10:14+00:00,where can I borrow books,Method C - Sentence Transformers (Semantic Search),library_service,0.94,Yes,
+2026-08-26T10:12:00+00:00,急需成绩单要怎么催,Method C - Sentence Transformers (Semantic Search),transcript_request,0.88,Yes,Works with Chinese too
+2026-08-26T10:13:48+00:00,time clash kena buat apa,Method C - Sentence Transformers (Semantic Search),class_timetable,0.85,Yes,
+2026-08-26T10:15:30+00:00,matric card expired can still use,Method C - Sentence Transformers (Semantic Search),student_id_card,0.90,Yes,Impressed with accuracy
