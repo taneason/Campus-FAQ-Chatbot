@@ -1,31 +1,66 @@
 question,expected_intent,method_a_pred,method_b_pred,method_c_pred
-how can I know when my exams are,exam_timetable,exam_timetable,exam_timetable,exam_timetable
-where do I look for the finals schedule,exam_timetable,exam_timetable,exam_timetable,exam_timetable
-bila nak keluar exam timetable,exam_timetable,exam_timetable,exam_timetable,exam_timetable
-几时可以看到考试表,exam_timetable,it_support,exam_timetable,library_service
-exam paper timing macam mana nak tau,exam_timetable,exam_timetable,exam_timetable,exam_timetable
-how to add a new subject this semester,course_registration,course_registration,course_registration,course_registration
-where do I sign up for elective classes,course_registration,course_registration,course_registration,course_registration
-macam mana nak tambah kelas baru,course_registration,course_registration,course_registration,fee_payment
-我要怎么加课,course_registration,it_support,course_registration,library_service
-can I still register subject after deadline,course_registration,course_registration,course_registration,course_registration
-where do I settle my tuition bill,fee_payment,fee_payment,fee_payment,fee_payment
-macam mana nak bayar fee semester ni,fee_payment,fee_payment,fee_payment,fee_payment
-学费还没交怎么办,fee_payment,it_support,fee_payment,fee_payment
-is there a late fee payment charge,fee_payment,fee_payment,fee_payment,fee_payment
-can I pay school fee using credit card,fee_payment,fee_payment,fee_payment,fee_payment
-how to apply for a hostel room online,hostel_application,hostel_application,hostel_application,hostel_application
-macam mana nak mohon bilik asrama,hostel_application,hostel_application,hostel_application,hostel_application
-宿舍申请流程是什么,hostel_application,it_support,hostel_application,hostel_application
-when will hostel results be announced,hostel_application,hostel_application,hostel_application,hostel_application
-is it too late to apply for accommodation,hostel_application,hostel_application,hostel_application,hostel_application
-how long can I keep a borrowed book,library_service,library_service,library_service,library_service
-macam mana nak renew buku library,library_service,library_service,library_service,library_service
-图书馆的电子资源怎么用,library_service,it_support,library_service,library_service
-where do I return library books after hours,library_service,library_service,library_service,library_service
-can non-students access the library,library_service,library_service,library_service,library_service
-my laptop cannot connect to campus network,it_support,it_support,it_support,it_support
-macam mana nak repair wifi kat hostel,it_support,it_support,hostel_application,hostel_application
-学生邮箱密码要怎么改,it_support,it_support,it_support,library_service
-who do I email for portal technical issues,it_support,it_support,it_support,it_support
-the student portal keeps showing an error,it_support,it_support,it_support,it_support
+got my paper date anot,exam_timetable,exam_timetable,student_id_card,exam_timetable
+nak tengok tarikh peperiksaan akhir sem,exam_timetable,exam_timetable,course_registration,exam_timetable
+我几号要考试来着,exam_timetable,exam_timetable,exam_timetable,exam_timetable
+where can I see what time my paper starts,exam_timetable,exam_timetable,library_service,exam_timetable
+final paper schedule released already or not,exam_timetable,class_timetable,transcript_request,exam_timetable
+boleh ke tukar subjek sekarang,course_registration,course_registration,course_registration,course_registration
+how do I swap my class section,course_registration,course_registration,course_registration,class_timetable
+想换一门课怎么办,course_registration,it_support,course_registration,course_registration
+is the add drop window still open,course_registration,course_registration,course_registration,course_registration
+mana nak pi daftar elective,course_registration,course_registration,course_registration,course_registration
+duit sem belum bayar apa jadi,fee_payment,fee_payment,library_service,fee_payment
+ada online banking untuk bayar yuran tak,fee_payment,fee_payment,fee_payment,fee_payment
+我的学费账单怎么查,fee_payment,exam_timetable,fee_payment,fee_payment
+got late payment penalty or not,fee_payment,fee_payment,fee_payment,fee_payment
+which bank can I use to transfer tuition,fee_payment,fee_payment,fee_payment,fee_payment
+bilik asrama kosong ada lagi tak,hostel_application,hostel_application,hostel_application,hostel_application
+how long does hostel approval take,hostel_application,hostel_application,hostel_application,hostel_application
+宿舍抽签结果什么时候出,hostel_application,hostel_application,hostel_application,hostel_application
+first year students auto get hostel or not,hostel_application,hostel_application,hostel_application,hostel_application
+nak renew duduk asrama lagi sem depan,hostel_application,hostel_application,hostel_application,hostel_application
+pinjam buku maximum berapa,library_service,library_service,library_service,library_service
+kena denda ke kalau lambat pulang buku,library_service,library_service,library_service,library_service
+怎么查我借了哪些书,library_service,exam_timetable,library_service,library_service
+can alumni still use the library,library_service,library_service,library_service,library_service
+is there a study room I can book in library,library_service,library_service,library_service,library_service
+laptop tak dapat masuk student portal,it_support,it_support,it_support,it_support
+campus VPN macam mana nak setup,it_support,it_support,it_support,it_support
+我的校园账号被锁了,it_support,exam_timetable,it_support,it_support
+printer in computer lab not working who to call,it_support,it_support,library_service,it_support
+email verification link expired what to do,it_support,it_support,it_support,it_support
+time clash kena buat apa,class_timetable,class_timetable,class_timetable,class_timetable
+mana nak tengok dewan kuliah saya,class_timetable,class_timetable,hostel_application,hostel_application
+今天有没有课,class_timetable,class_timetable,class_timetable,class_timetable
+replacement class been announced or not,class_timetable,class_timetable,course_registration,class_timetable
+which portal shows my tutorial slot,class_timetable,class_timetable,class_timetable,it_support
+matric card expired can still use or not,student_id_card,student_id_card,student_id_card,student_id_card
+baru masuk uni mana nak amik kad pelajar,student_id_card,student_id_card,student_id_card,student_id_card
+我的学生证坏了要怎么处理,student_id_card,exam_timetable,it_support,student_id_card
+can I use phone as digital student ID,student_id_card,student_id_card,student_id_card,student_id_card
+berapa lama proses buat kad matrik baru,student_id_card,student_id_card,student_id_card,student_id_card
+PTPTN semakan status macam mana,scholarship_financial_aid,scholarship_financial_aid,scholarship_financial_aid,exam_timetable
+got any scholarship for degree students,scholarship_financial_aid,scholarship_financial_aid,scholarship_financial_aid,scholarship_financial_aid
+奖学金打进账户了吗,scholarship_financial_aid,scholarship_financial_aid,scholarship_financial_aid,scholarship_financial_aid
+kena maintain berapa GPA untuk biasiswa,scholarship_financial_aid,scholarship_financial_aid,scholarship_financial_aid,scholarship_financial_aid
+facing financial hardship who should I see,scholarship_financial_aid,scholarship_financial_aid,scholarship_financial_aid,scholarship_financial_aid
+result slip sama dengan transkrip ke,transcript_request,transcript_request,transcript_request,transcript_request
+boleh mohon transcript untuk hantar ke dua universiti,transcript_request,transcript_request,transcript_request,transcript_request
+急需成绩单要怎么催,transcript_request,transcript_request,transcript_request,transcript_request
+how to get my transcript certified as true copy,transcript_request,transcript_request,transcript_request,transcript_request
+my employer wants official results what do I give them,transcript_request,scholarship_financial_aid,scholarship_financial_aid,transcript_request
+ada sesiapa yang boleh tolong kalau rasa down,counseling_service,fee_payment,course_registration,counseling_service
+kaunseling online ada tak,counseling_service,counseling_service,counseling_service,counseling_service
+我压力很大可以找谁,counseling_service,exam_timetable,counseling_service,counseling_service
+is there a walk-in option for counseling,counseling_service,counseling_service,counseling_service,counseling_service
+does counseling center help with study stress,counseling_service,counseling_service,counseling_service,counseling_service
+boleh park motor kat mana dalam kampus,parking_permit,it_support,parking_permit,parking_permit
+sticker parking dah tamat tempoh macam mana nak renew,parking_permit,parking_permit,parking_permit,parking_permit
+我的停车位被别人占了怎么投报,parking_permit,exam_timetable,parking_permit,parking_permit
+how to appeal a parking summon on campus,parking_permit,parking_permit,parking_permit,parking_permit
+freshie can apply for parking permit or not,parking_permit,parking_permit,parking_permit,parking_permit
+yo what up,greeting,greeting,greeting,greeting
+salam semua,greeting,fee_payment,greeting,greeting
+晚上好,greeting,greeting,greeting,greeting
+good evening chatbot,greeting,greeting,class_timetable,greeting
+howdy,greeting,greeting,greeting,greeting

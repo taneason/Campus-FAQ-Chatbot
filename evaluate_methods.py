@@ -3,7 +3,6 @@ Evaluate Method A, B, and C on a fixed held-out test set.
 
 Usage:
     python evaluate_methods.py
-    python evaluate_methods.py --rasa-url https://your-rasa-service.onrender.com/model/parse
 
 Writes:
     data/evaluation_results.csv   (per-question predictions for all methods)
@@ -12,14 +11,12 @@ Writes:
 
 from __future__ import annotations
 
-import argparse
 import csv
-import os
 from pathlib import Path
 
 import joblib
+import numpy as np
 import pandas as pd
-import requests
 from sklearn.metrics import accuracy_score, precision_recall_fscore_support
 
 BASE_DIR = Path(__file__).resolve().parent
@@ -30,16 +27,9 @@ REPORT_PATH = BASE_DIR / "models" / "evaluation_report.txt"
 METRICS_CSV_PATH = BASE_DIR / "data" / "evaluation_metrics.csv"
 
 
-def parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(description="Evaluate Method A/B/C on a fixed test set")
-    parser.add_argument(
-        "--rasa-url",
-        default=os.getenv("RASA_URL", "http://localhost:5005/model/parse"),
-        help="Rasa /model/parse endpoint for Method C",
-    )
-    return parser.parse_args()
-
-
+# ---------------------------------------------------------------------------
+# Method A
+# ---------------------------------------------------------------------------
 def load_method_a():
     vectorizer = joblib.load(MODEL_DIR / "method_a_vectorizer.pkl")
     clf = joblib.load(MODEL_DIR / "method_a_svm.pkl")
@@ -56,6 +46,9 @@ def predict_method_a(text: str, artifacts) -> str:
     return label_encoder.inverse_transform([best_idx])[0]
 
 
+# ---------------------------------------------------------------------------
+# Method B
+# ---------------------------------------------------------------------------
 def load_method_b():
     from transformers import AutoModelForSequenceClassification, AutoTokenizer
 
@@ -77,13 +70,33 @@ def predict_method_b(text: str, artifacts) -> str:
     return model.config.id2label[best_idx]
 
 
-def predict_method_c(text: str, rasa_url: str) -> str:
-    resp = requests.post(rasa_url, json={"text": text}, timeout=30)
-    resp.raise_for_status()
-    data = resp.json()
-    return data["intent"]["name"]
+# ---------------------------------------------------------------------------
+# Method C - Sentence Transformers + Cosine Similarity
+# ---------------------------------------------------------------------------
+def load_method_c():
+    from collections import Counter
+    from sentence_transformers import SentenceTransformer
+
+    embeddings = np.load(str(MODEL_DIR / "method_c_embeddings.npy"))
+    labels = joblib.load(MODEL_DIR / "method_c_labels.pkl")
+    model = SentenceTransformer("paraphrase-multilingual-mpnet-base-v2")
+    return embeddings, labels, model, Counter
 
 
+def predict_method_c(text: str, artifacts) -> str:
+    embeddings, labels, model, Counter = artifacts
+    vec = model.encode([text])[0]
+    corpus_norm = embeddings / (np.linalg.norm(embeddings, axis=1, keepdims=True) + 1e-10)
+    query_norm = vec / (np.linalg.norm(vec) + 1e-10)
+    sims = corpus_norm @ query_norm
+    top_k_idx = np.argsort(sims)[::-1][:5]
+    top_k_labels = [labels[i] for i in top_k_idx]
+    return Counter(top_k_labels).most_common(1)[0][0]
+
+
+# ---------------------------------------------------------------------------
+# Evaluation helpers
+# ---------------------------------------------------------------------------
 def evaluate(y_true, y_pred, label: str) -> dict:
     accuracy = accuracy_score(y_true, y_pred)
     precision, recall, f1, _ = precision_recall_fscore_support(
@@ -93,12 +106,10 @@ def evaluate(y_true, y_pred, label: str) -> dict:
     return {"method": label, "accuracy": accuracy, "precision": precision, "recall": recall, "f1": f1}
 
 
-def main():
-    args = parse_args()
-    run_evaluation(args.rasa_url)
-
-
-def run_evaluation(rasa_url: str) -> list[dict]:
+# ---------------------------------------------------------------------------
+# Main
+# ---------------------------------------------------------------------------
+def run_evaluation() -> list[dict]:
     if not TEST_SET_PATH.exists():
         raise FileNotFoundError(f"Test set not found: {TEST_SET_PATH}")
 
@@ -120,16 +131,17 @@ def run_evaluation(rasa_url: str) -> list[dict]:
         b_artifacts = load_method_b()
         preds_b = [predict_method_b(q, b_artifacts) for q in questions]
         metrics.append(evaluate(y_true, preds_b, "Method B (multilingual BERT)"))
-    except Exception as exc:  # pragma: no cover
+    except Exception as exc:
         print(f"Skipping Method B: {exc}")
         preds_b = ["not_implemented"] * len(questions)
 
     # Method C
     preds_c = []
     try:
-        preds_c = [predict_method_c(q, rasa_url) for q in questions]
-        metrics.append(evaluate(y_true, preds_c, "Method C (Rasa)"))
-    except Exception as exc:  # pragma: no cover
+        c_artifacts = load_method_c()
+        preds_c = [predict_method_c(q, c_artifacts) for q in questions]
+        metrics.append(evaluate(y_true, preds_c, "Method C (Sentence Transformers)"))
+    except Exception as exc:
         print(f"Skipping Method C: {exc}")
         preds_c = ["not_implemented"] * len(questions)
 
@@ -152,10 +164,10 @@ def run_evaluation(rasa_url: str) -> list[dict]:
 
     report_lines = ["Method Comparison - Intent Classification Evaluation", ""]
     report_lines.append(f"Test set size: {len(questions)} questions\n")
-    report_lines.append(f"{'Method':<30}{'Accuracy':>10}{'Precision':>12}{'Recall':>10}{'F1':>10}")
+    report_lines.append(f"{'Method':<35}{'Accuracy':>10}{'Precision':>12}{'Recall':>10}{'F1':>10}")
     for m in metrics:
         report_lines.append(
-            f"{m['method']:<30}{m['accuracy']:>10.4f}{m['precision']:>12.4f}{m['recall']:>10.4f}{m['f1']:>10.4f}"
+            f"{m['method']:<35}{m['accuracy']:>10.4f}{m['precision']:>12.4f}{m['recall']:>10.4f}{m['f1']:>10.4f}"
         )
 
     REPORT_PATH.write_text("\n".join(report_lines) + "\n", encoding="utf-8")
@@ -169,6 +181,10 @@ def run_evaluation(rasa_url: str) -> list[dict]:
     print(f"Saved comparison report: {REPORT_PATH}")
     print(f"Saved metrics CSV: {METRICS_CSV_PATH}")
     return metrics
+
+
+def main():
+    run_evaluation()
 
 
 if __name__ == "__main__":

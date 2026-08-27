@@ -2,9 +2,9 @@
 Unified Campus FAQ Chatbot Demo
 --------------------------------
 Combines all three teammates' solutions into one Streamlit interface:
-    Method A - TF-IDF + SVM              (traditional ML)      -> implemented below
-    Method B - multilingual-BERT         (deep learning)       -> implemented below
-    Method C - Rasa                      (platform-based)      -> implemented below
+    Method A - TF-IDF + SVM                        (traditional ML)   -> implemented below
+    Method B - multilingual-BERT                   (deep learning)    -> implemented below
+    Method C - Sentence Transformers + Cosine Sim  (semantic search)  -> implemented below
 
 Run with:
     streamlit run app.py
@@ -15,8 +15,8 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 import joblib
+import numpy as np
 import pandas as pd
-import requests
 import streamlit as st
 
 from data.responses import CONFIDENCE_THRESHOLD, RESPONSES
@@ -138,29 +138,50 @@ def predict_method_b(text: str):
 
 
 # ---------------------------------------------------------------------------
-# METHOD C - Rasa
+# METHOD C - Sentence Transformers + Cosine Similarity (Semantic Search)
 # ---------------------------------------------------------------------------
-RASA_URL = st.secrets.get(
-    "RASA_URL",
-    os.getenv("RASA_URL", "http://localhost:5005/model/parse"),
-)
+try:
+    from sentence_transformers import SentenceTransformer as _SentenceTransformer
+except ImportError:
+    _SentenceTransformer = None
+
+
+@st.cache_resource
+def load_method_c():
+    if _SentenceTransformer is None:
+        raise ImportError("Install sentence-transformers: pip install sentence-transformers")
+    emb_path   = MODEL_DIR / "method_c_embeddings.npy"
+    label_path = MODEL_DIR / "method_c_labels.pkl"
+    missing = [str(p.name) for p in [emb_path, label_path] if not p.exists()]
+    if missing:
+        raise FileNotFoundError(
+            "Missing Method C artifacts: " + ", ".join(missing) + ". Run python train_method_c.py first."
+        )
+    embeddings = np.load(str(emb_path))
+    labels     = joblib.load(label_path)
+    model      = _SentenceTransformer("paraphrase-multilingual-mpnet-base-v2")
+    return embeddings, labels, model
 
 
 def predict_method_c(text: str):
-    # Render free tier sleeps when idle; give the first request time to wake it up.
-    for timeout in (8, 45):
-        try:
-            resp = requests.post(RASA_URL, json={"text": text}, timeout=timeout)
-            resp.raise_for_status()
-            data = resp.json()
-            intent = data["intent"]["name"]
-            confidence = float(data["intent"]["confidence"])
-            return intent, confidence
-        except requests.Timeout:
-            continue
-        except (requests.RequestException, KeyError, TypeError, ValueError):
-            return "not_implemented", 0.0
-    return "waking_up", 0.0
+    if _SentenceTransformer is None:
+        return "not_implemented", 0.0
+    try:
+        from collections import Counter
+        embeddings, labels, model = load_method_c()
+        vec         = model.encode([text])[0]
+        corpus_norm = embeddings / (np.linalg.norm(embeddings, axis=1, keepdims=True) + 1e-10)
+        query_norm  = vec / (np.linalg.norm(vec) + 1e-10)
+        sims        = corpus_norm @ query_norm
+        top_k_idx   = np.argsort(sims)[::-1][:5]
+        top_k_labels = [labels[i] for i in top_k_idx]
+        intent      = Counter(top_k_labels).most_common(1)[0][0]
+        confidence  = float(sims[top_k_idx[0]])
+        return intent, confidence
+    except Exception:
+        return "not_implemented", 0.0
+
+
 
 
 # ---------------------------------------------------------------------------
@@ -175,7 +196,7 @@ def get_reply(intent: str, confidence: float) -> str:
 METHODS = {
     "Method A - TF-IDF + SVM (Traditional ML)": predict_method_a,
     "Method B - Multilingual BERT (Deep Learning)": predict_method_b,
-    "Method C - Rasa (Platform-based)": predict_method_c,
+    "Method C - Sentence Transformers (Semantic Search)": predict_method_c,
 }
 
 EXAMPLE_QUESTIONS = [
@@ -189,16 +210,13 @@ EXAMPLE_QUESTIONS = [
 
 
 def render_answer_box(method_name: str, intent: str, confidence: float):
-    if intent == "waking_up":
-        st.info("Method C server was asleep and is waking up. Please submit your question again in a moment.")
-        st.caption("Predicted intent: waking up | Confidence: 0.00")
-        return
-
     if intent == "not_implemented":
         if method_name.startswith("Method B"):
             st.warning("Method B model is unavailable. Run `python train_method_b.py` first.")
+        elif method_name.startswith("Method C"):
+            st.warning("Method C model is unavailable. Run `python train_method_c.py` first.")
         else:
-            st.warning("Method C needs a trained Rasa server. Configure RASA_URL for deployed apps.")
+            st.warning("This method is unavailable right now.")
         st.caption("Predicted intent: unavailable | Confidence: 0.00")
         return
 
@@ -206,6 +224,7 @@ def render_answer_box(method_name: str, intent: str, confidence: float):
     st.markdown(f"### {method_name}")
     st.info(reply)
     st.caption(f"Predicted intent: {intent} | Confidence: {confidence:.2f}")
+
 
 
 if "chat_history" not in st.session_state:
@@ -244,10 +263,8 @@ if mode == "Single method":
         predict_fn = METHODS[selected_method]
         intent, confidence = predict_fn(prompt)
 
-        if intent == "waking_up":
-            st.info("Method C server was asleep and is waking up. Please submit your question again in a moment.")
-        elif intent == "not_implemented":
-            st.warning("This method is unavailable right now. Check its setup (trained model or running server).")
+        if intent == "not_implemented":
+            st.warning("This method is unavailable right now. Check its setup (trained model).")
         else:
             reply = get_reply(intent, confidence)
 
@@ -299,7 +316,7 @@ else:
         with st.spinner("Running Method A / B / C on the fixed test set..."):
             from evaluate_methods import run_evaluation
 
-            run_evaluation(RASA_URL)
+            run_evaluation()
         st.success("Done. Table refreshed below.")
     if intent_metrics_path.exists():
         st.dataframe(pd.read_csv(intent_metrics_path), use_container_width=True)
@@ -344,6 +361,7 @@ else:
         st.info("No feedback collected yet. Feedback appears here once users submit the feedback form.")
 st.sidebar.markdown("---")
 st.sidebar.caption(
-    "Method A is fully implemented and trained. Method B requires a local BERT model in models/method_b_bert; "
-    "Method C expects a local Rasa server at http://localhost:5005."
+    "Method A: run train_method_a.py | "
+    "Method B: run train_method_b.py | "
+    "Method C: run train_method_c.py — all fully local, no server needed."
 )

@@ -1,8 +1,8 @@
 Method Comparison - Intent Classification Evaluation
 
-Test set size: 30 questions
+Test set size: 65 questions
 
-Method                          Accuracy   Precision    Recall        F1
-Method A (TF-IDF + SVM)           0.8333      0.9167    0.8333    0.8519
-Method B (multilingual BERT)      0.9667      0.9722    0.9667    0.9663
-Method C (Rasa)                   0.8333      0.8819    0.8333    0.8294
+Method                               Accuracy   Precision    Recall        F1
+Method A (TF-IDF + SVM)                0.8154      0.8769    0.8154    0.8270
+Method B (multilingual BERT)           0.8154      0.8513    0.8154    0.8018
+Method C (Sentence Transformers)       0.9385      0.9423    0.9385    0.9363

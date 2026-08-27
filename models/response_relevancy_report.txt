@@ -4,6 +4,6 @@ Caveat: responses are fixed canned text per intent, so these scores mainly refle
 whether each method retrieved the correct intent's response, not generation quality.
 
 Method                            Avg BLEU   Avg ROUGE-L
-Method A (TF-IDF + SVM)             0.8353        0.8567
-Method B (multilingual BERT)        0.9671        0.9716
-Method C (Rasa)                     0.8386        0.8654
+Method A (TF-IDF + SVM)             0.7167        0.7527
+Method B (multilingual BERT)        0.5420        0.6210
+Method C (Rasa)                     0.0102        0.1535
