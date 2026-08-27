@@ -1,47 +1,49 @@
 """
 Method C - Semantic Similarity: Sentence Transformers + Cosine Similarity
 --------------------------------------------------------------------------
-No server needed. Encodes all FAQ training examples into sentence embeddings,
-then at inference time finds the nearest neighbour by cosine similarity.
+Improvements over v1:
+  - Upgraded model: paraphrase-multilingual-mpnet-base-v2 (stronger than MiniLM)
+  - Top-K majority voting (k=5): picks the most common intent among the 5
+    nearest neighbours, reducing single-outlier errors
 
 Run once to build the index:
     python train_method_c.py
 
 Produces (saved into models/):
-    - method_c_embeddings.npy    (matrix of shape [N, dim])
-    - method_c_labels.pkl        (list of intent strings, length N)
-    - method_c_eval_report.txt   (accuracy / precision / recall / F1)
+    - method_c_embeddings.npy
+    - method_c_labels.pkl
+    - method_c_eval_report.txt
 """
 
 import numpy as np
 import pandas as pd
 import joblib
 from pathlib import Path
-from sklearn.metrics import (
-    accuracy_score, classification_report, confusion_matrix
-)
+from collections import Counter
+from sklearn.metrics import accuracy_score, classification_report, confusion_matrix
 from sklearn.model_selection import train_test_split
 from sentence_transformers import SentenceTransformer
 
-MODEL_NAME = "paraphrase-multilingual-MiniLM-L12-v2"
+MODEL_NAME = "paraphrase-multilingual-mpnet-base-v2"
+TOP_K      = 5   # majority-vote over top-K neighbours
 DATA_PATH  = Path("data/faq_data.csv")
 MODEL_DIR  = Path("models")
 
-# ---------------------------------------------------------------------------
-# Cosine similarity helper
-# ---------------------------------------------------------------------------
 def cosine_similarity_matrix(query_vec: np.ndarray, corpus_matrix: np.ndarray) -> np.ndarray:
-    """Return cosine similarities between one query row and every corpus row."""
     query_norm  = query_vec  / (np.linalg.norm(query_vec)  + 1e-10)
     corpus_norm = corpus_matrix / (np.linalg.norm(corpus_matrix, axis=1, keepdims=True) + 1e-10)
-    return corpus_norm @ query_norm   # shape: (N,)
+    return corpus_norm @ query_norm
 
 
-def predict(text: str, embeddings: np.ndarray, labels: list, model: SentenceTransformer):
+def predict(text: str, embeddings: np.ndarray, labels: list, model: SentenceTransformer, k: int = TOP_K):
     vec  = model.encode([text])[0]
     sims = cosine_similarity_matrix(vec, embeddings)
-    best = int(np.argmax(sims))
-    return labels[best], float(sims[best])
+    top_k_idx = np.argsort(sims)[::-1][:k]
+    # Majority vote among top-k neighbours; tie-break by highest similarity
+    top_k_labels = [labels[i] for i in top_k_idx]
+    intent = Counter(top_k_labels).most_common(1)[0][0]
+    confidence = float(sims[top_k_idx[0]])
+    return intent, confidence
 
 
 # ---------------------------------------------------------------------------
