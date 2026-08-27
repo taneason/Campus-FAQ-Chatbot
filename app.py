@@ -31,31 +31,37 @@ FEEDBACK_COLUMNS = ["timestamp", "question", "method", "intent", "confidence", "
 
 def save_feedback(question: str, method_name: str, intent: str, confidence: float, helpful: str, comment: str) -> None:
     FEEDBACK_PATH.parent.mkdir(parents=True, exist_ok=True)
-    is_new_file = not FEEDBACK_PATH.exists()
-
     row = {
         "timestamp": datetime.now(timezone.utc).isoformat(),
-        "question": question,
+        "question": question.replace("\n", " ").strip(),
         "method": method_name,
         "intent": intent,
         "confidence": f"{confidence:.2f}",
         "helpful": helpful,
         "comment": comment.replace("\n", " ").strip(),
     }
-
-    with FEEDBACK_PATH.open("a", encoding="utf-8", newline="") as f:
-        if is_new_file:
-            f.write(",".join(FEEDBACK_COLUMNS) + "\n")
-        f.write(",".join(f'"{row[col]}"' for col in FEEDBACK_COLUMNS) + "\n")
+    df_new = pd.DataFrame([row])
+    if not FEEDBACK_PATH.exists():
+        df_new.to_csv(FEEDBACK_PATH, index=False)
+    else:
+        df_new.to_csv(FEEDBACK_PATH, mode="a", header=False, index=False)
 
 
 def render_feedback_form(form_key: str, question: str, method_name: str, intent: str, confidence: float) -> None:
+    if "feedback_submitted" not in st.session_state:
+        st.session_state.feedback_submitted = {}
+
+    if st.session_state.feedback_submitted.get(form_key, False):
+        st.success("✅ Feedback recorded! Thank you.")
+        return
+
     with st.form(key=form_key):
         helpful = st.radio("Was this answer helpful?", ["Yes", "No"], horizontal=True, key=f"{form_key}_helpful")
         comment = st.text_input("Optional comment", key=f"{form_key}_comment")
         if st.form_submit_button("Submit feedback"):
             save_feedback(question, method_name, intent, confidence, helpful, comment)
-            st.success("Thanks for your feedback!")
+            st.session_state.feedback_submitted[form_key] = True
+            st.rerun()
 
 
 # ---------------------------------------------------------------------------
@@ -250,6 +256,9 @@ for question in EXAMPLE_QUESTIONS:
         st.session_state.quick_question = question
 
 if mode == "Single method":
+    if "single_result" not in st.session_state:
+        st.session_state.single_result = None
+
     with st.form(key="single_method_form"):
         prompt = st.text_input(
             "Ask a question about campus services...",
@@ -267,17 +276,31 @@ if mode == "Single method":
             st.warning("This method is unavailable right now. Check its setup (trained model).")
         else:
             reply = get_reply(intent, confidence)
-
             st.session_state.chat_history.append({"role": "user", "text": prompt})
             st.session_state.chat_history.append({"role": "assistant", "text": reply})
+            st.session_state.single_result = {
+                "prompt": prompt,
+                "method_name": selected_method,
+                "intent": intent,
+                "confidence": confidence,
+                "reply": reply,
+            }
 
-            st.subheader("Latest response")
-            st.markdown(f"**{selected_method.split(' - ')[0]}:** {reply}")
-            with st.expander("Prediction details"):
-                st.write(f"Intent: `{intent}`")
-                st.write(f"Confidence: `{confidence:.2f}`")
+    if st.session_state.single_result:
+        res = st.session_state.single_result
+        st.subheader("Latest response")
+        st.markdown(f"**{res['method_name'].split(' - ')[0]}:** {res['reply']}")
+        with st.expander("Prediction details"):
+            st.write(f"Intent: `{res['intent']}`")
+            st.write(f"Confidence: `{res['confidence']:.2f}`")
 
-            render_feedback_form("single_feedback", prompt, selected_method, intent, confidence)
+        render_feedback_form(
+            f"single_feedback_{hash(res['prompt'])}",
+            res["prompt"],
+            res["method_name"],
+            res["intent"],
+            res["confidence"],
+        )
 
     if st.session_state.chat_history:
         st.subheader("Conversation history")
@@ -288,6 +311,9 @@ if mode == "Single method":
                 st.chat_message("assistant").write(item["text"])
 
 elif mode == "Compare all 3 methods":
+    if "compare_results" not in st.session_state:
+        st.session_state.compare_results = None
+
     with st.form(key="compare_form"):
         prompt = st.text_input(
             "Ask a question to compare all methods...",
@@ -298,14 +324,36 @@ elif mode == "Compare all 3 methods":
 
     if submitted and prompt.strip():
         st.session_state.quick_question = ""
-        st.subheader("Side-by-side comparison")
+        results = []
+        for method_name, predict_fn in METHODS.items():
+            intent, confidence = predict_fn(prompt)
+            results.append({
+                "method_name": method_name,
+                "intent": intent,
+                "confidence": confidence,
+            })
+        st.session_state.compare_results = {
+            "prompt": prompt,
+            "results": results,
+        }
+
+    if st.session_state.compare_results:
+        saved_prompt = st.session_state.compare_results["prompt"]
+        saved_results = st.session_state.compare_results["results"]
+
+        st.subheader(f"Side-by-side comparison for: *\"{saved_prompt}\"*")
         cols = st.columns(3)
-        for idx, (col, (method_name, predict_fn)) in enumerate(zip(cols, METHODS.items())):
+        for idx, (col, res) in enumerate(zip(cols, saved_results)):
             with col:
-                intent, confidence = predict_fn(prompt)
-                render_answer_box(method_name, intent, confidence)
-                if intent not in ("waking_up", "not_implemented"):
-                    render_feedback_form(f"compare_feedback_{idx}", prompt, method_name, intent, confidence)
+                render_answer_box(res["method_name"], res["intent"], res["confidence"])
+                if res["intent"] not in ("waking_up", "not_implemented"):
+                    render_feedback_form(
+                        f"compare_feedback_{idx}_{hash(saved_prompt)}",
+                        saved_prompt,
+                        res["method_name"],
+                        res["intent"],
+                        res["confidence"],
+                    )
 else:
     st.subheader("Evaluation results")
     st.caption("Run the buttons below on demand; nothing here runs unless you click a button.")
@@ -344,17 +392,22 @@ else:
     else:
         st.info("Not generated yet. Click the button above to run it.")
 
-    st.markdown("#### User feedback (helpful %)")
+    st.markdown("#### User feedback (Satisfaction Rate)")
     if FEEDBACK_PATH.exists():
         feedback_df = pd.read_csv(FEEDBACK_PATH)
         if not feedback_df.empty:
             summary = (
-                feedback_df.groupby("method")["helpful"]
-                .apply(lambda col: (col == "Yes").mean() * 100)
-                .reset_index(name="helpful_pct")
+                feedback_df.groupby("method")
+                .agg(
+                    Total_Responses=("helpful", "count"),
+                    Helpful_Yes=("helpful", lambda col: (col.astype(str).str.strip().str.lower() == "yes").sum()),
+                    Helpful_Pct=("helpful", lambda col: f"{(col.astype(str).str.strip().str.lower() == 'yes').mean() * 100:.1f}%"),
+                )
+                .reset_index()
             )
-            summary["total_responses"] = feedback_df.groupby("method").size().values
             st.dataframe(summary, use_container_width=True)
+            with st.expander("📝 View live feedback submission logs"):
+                st.dataframe(feedback_df.tail(20), use_container_width=True)
         else:
             st.info("No feedback collected yet. Feedback appears here once users submit the feedback form.")
     else:
