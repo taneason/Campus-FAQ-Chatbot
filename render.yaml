@@ -1,9 +1,0 @@
-services:
-  - type: web
-    name: campus-faq-rasa
-    runtime: docker
-    dockerfilePath: rasa_project/Dockerfile
-    dockerContext: rasa_project
-    plan: free
-    autoDeployTrigger: commit
-    healthCheckPath: /status

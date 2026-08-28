@@ -246,8 +246,24 @@ st.title("🎓 Campus FAQ Chatbot")
 st.caption("Multilingual (English / Bahasa Malaysia / Mandarin / Manglish) campus assistant")
 
 st.sidebar.header("Controls")
-mode = st.sidebar.radio("Mode", ["Single method", "Compare all 3 methods", "Evaluation"])
+mode = st.sidebar.radio("Mode", ["Single method", "Compare all 3 methods", "Dataset Overview", "Evaluation"])
 selected_method = st.sidebar.selectbox("Choose method", list(METHODS.keys()))
+
+# Sidebar Dataset Quick Stats
+st.sidebar.markdown("---")
+st.sidebar.subheader("📊 Dataset Statistics")
+faq_file = DATA_DIR / "faq_data.csv"
+test_file = DATA_DIR / "test_set.csv"
+if faq_file.exists():
+    df_faq = pd.read_csv(faq_file).dropna(subset=["text", "intent"])
+    total_samples = len(df_faq)
+    total_intents = df_faq["intent"].nunique()
+    st.sidebar.metric("Training Samples", f"{total_samples} queries")
+    st.sidebar.metric("Intent Classes", f"{total_intents} categories")
+    st.sidebar.caption("🌐 Languages: English, Malay, Chinese, Manglish")
+    if test_file.exists():
+        df_test_count = len(pd.read_csv(test_file).dropna(subset=["text", "intent"]))
+        st.sidebar.caption(f"🧪 Test Benchmark: {df_test_count} cases (5 per intent)")
 
 st.sidebar.markdown("---")
 st.sidebar.subheader("Quick examples")
@@ -354,6 +370,92 @@ elif mode == "Compare all 3 methods":
                         res["intent"],
                         res["confidence"],
                     )
+elif mode == "Dataset Overview":
+    st.subheader("📚 Campus FAQ Dataset Overview & Statistics")
+    st.caption("Detailed breakdown of the multilingual dataset used across all AI training and evaluation pipelines.")
+
+    faq_file = DATA_DIR / "faq_data.csv"
+    test_file = DATA_DIR / "test_set.csv"
+
+    if faq_file.exists():
+        df_faq = pd.read_csv(faq_file).dropna(subset=["text", "intent"])
+        df_test = pd.read_csv(test_file).dropna(subset=["text", "intent"]) if test_file.exists() else pd.DataFrame()
+
+        # 1. Top KPI Metrics
+        m1, m2, m3, m4 = st.columns(4)
+        m1.metric("Training Samples", f"{len(df_faq)} queries")
+        m2.metric("Intent Categories", f"{df_faq['intent'].nunique()} classes")
+        m3.metric("Held-Out Test Cases", f"{len(df_test)} cases", help="5 queries per intent class")
+        m4.metric("Languages & Dialects", "4", help="English, Malay, Chinese, Manglish")
+
+        st.markdown("---")
+
+        # 2. Intent Distribution Summary
+        st.markdown("#### Intent Sample Distribution")
+        intent_summary = (
+            df_faq["intent"]
+            .value_counts()
+            .reset_index(name="Sample Count")
+            .rename(columns={"intent": "Intent Category"})
+        )
+        intent_summary["Percentage"] = (intent_summary["Sample Count"] / len(df_faq) * 100).map(lambda v: f"{v:.1f}%")
+
+        col_chart, col_table = st.columns([3, 2])
+        with col_chart:
+            st.bar_chart(df_faq["intent"].value_counts(), color="#1e7b85")
+        with col_table:
+            st.dataframe(intent_summary, use_container_width=True, height=350)
+
+        st.markdown("---")
+
+        # 3. Interactive Data Explorer
+        st.markdown("#### 🔍 Interactive Dataset Explorer")
+        tab_train, tab_test, tab_resp = st.tabs(["Training Corpus (faq_data.csv)", "Test Set (test_set.csv)", "Official Responses (responses.py)"])
+
+        with tab_train:
+            selected_filter = st.selectbox(
+                "Filter by intent:",
+                ["All Intents"] + sorted(df_faq["intent"].unique().tolist()),
+                key="filter_train_intent"
+            )
+            search_kw = st.text_input("Search training questions:", placeholder="e.g. timetable, bayar, 学费", key="search_train")
+            
+            view_df = df_faq.copy()
+            if selected_filter != "All Intents":
+                view_df = view_df[view_df["intent"] == selected_filter]
+            if search_kw.strip():
+                view_df = view_df[view_df["text"].str.contains(search_kw.strip(), case=False, na=False)]
+            
+            st.caption(f"Showing {len(view_df)} of {len(df_faq)} training samples")
+            st.dataframe(view_df, use_container_width=True)
+
+        with tab_test:
+            if not df_test.empty:
+                test_filter = st.selectbox(
+                    "Filter test cases by intent:",
+                    ["All Intents"] + sorted(df_test["intent"].unique().tolist()),
+                    key="filter_test_intent"
+                )
+                search_test_kw = st.text_input("Search test questions:", placeholder="e.g. room, portal, biasiswa", key="search_test")
+                
+                view_test = df_test.copy()
+                if test_filter != "All Intents":
+                    view_test = view_test[view_test["intent"] == test_filter]
+                if search_test_kw.strip():
+                    view_test = view_test[view_test["text"].str.contains(search_test_kw.strip(), case=False, na=False)]
+                
+                st.caption(f"Showing {len(view_test)} of {len(df_test)} test cases")
+                st.dataframe(view_test, use_container_width=True)
+            else:
+                st.info("Test set file not found.")
+
+        with tab_resp:
+            resp_rows = [{"Intent": k, "Official Campus Guidance": v} for k, v in RESPONSES.items() if k != "fallback"]
+            st.dataframe(pd.DataFrame(resp_rows), use_container_width=True)
+            st.info(f"**Safety Fallback Message:** {RESPONSES.get('fallback', 'N/A')}")
+    else:
+        st.warning("Dataset file (data/faq_data.csv) not found.")
+
 else:
     st.subheader("Evaluation results")
     st.caption("Run the buttons below on demand; nothing here runs unless you click a button.")
